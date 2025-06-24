@@ -1,0 +1,61 @@
+import Foundation
+
+public struct BibleReference: Comparable, Codable, Hashable {
+    var versionCode: Int = 0
+    var book: String?
+    var c: Int = 0
+    var c2: Int = 0
+    var v: Int = 0
+    var v2: Int = 0
+    
+    public init(versionCode: Int, b: String, c: Int, v: Int) {
+        self.versionCode = versionCode
+        self.book = b
+        self.c = c
+        self.c2 = c
+        self.v = v
+        self.v2 = v
+    }
+    
+    public init(versionCode: Int, b: String, c: Int, v: Int, c2: Int, v2: Int) {
+        self.versionCode = versionCode
+        self.book = b
+        self.c = c
+        self.c2 = c2
+        self.v = v
+        self.v2 = v2
+    }
+    
+    public func isRange() -> Bool {
+        return c != c2 || v != v2
+    }
+    
+    public static func compare(a: BibleReference, b: BibleReference) -> Int {
+        // returns -1, 0, or 1
+        if a.book == b.book {
+            if a.c == b.c {
+                if a.v == b.v {
+                    if a.v2 == b.v2 {
+                        return 0
+                    }
+                    return (a.v2 < b.v2) ? -1 : 1
+                }
+                return (a.v < b.v) ? -1 : 1
+            }
+            return (a.c < b.c) ? -1 : 1
+        }
+        return (a.book ?? "" < b.book ?? "") ? -1 : 1
+    }
+    
+    public static func < (lhs: BibleReference, rhs: BibleReference) -> Bool {
+        return compare(a: lhs, b: rhs) < 0
+    }
+
+    public var toUSFMOfChapter: String? {
+        guard let b = self.book else {
+            return nil
+        }
+        return "\(b.uppercased()).\(self.c)"
+    }
+    
+}

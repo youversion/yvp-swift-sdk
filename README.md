@@ -1,4 +1,4 @@
-# yvpsdk-swift
+# yvp-swift-sdk
 
 ## Getting started
 

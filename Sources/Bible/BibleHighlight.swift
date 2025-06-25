@@ -1,6 +1,6 @@
 import Foundation
 
-public struct BibleHighlight: CustomDebugStringConvertible {
+public struct BibleHighlight: CustomDebugStringConvertible, Sendable {
     public var versionCode: Int
     public var chapter: Int
     public var verse: Int

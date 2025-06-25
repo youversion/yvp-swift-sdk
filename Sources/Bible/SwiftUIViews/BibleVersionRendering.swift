@@ -547,12 +547,12 @@ public class DoubleAttributedString: Equatable, Hashable {
     var one: NSMutableAttributedString
     var two: AttributedString
 
-    init() {
+    public init() {
         one = NSMutableAttributedString()
         two = AttributedString()
     }
 
-    init(_ string: String) {
+    public init(_ string: String) {
         one = NSMutableAttributedString(string: string)
         two = AttributedString(string)
     }
@@ -586,21 +586,21 @@ public class DoubleAttributedString: Equatable, Hashable {
     }
 
     @discardableResult
-    func setFont(_ font: DoubleFont) -> DoubleAttributedString {
+    public func setFont(_ font: DoubleFont) -> DoubleAttributedString {
         one.addAttributes([.font: font.one], range: NSRange(location: 0, length: one.length))
         two.font = font.two
         return self
     }
 
     @discardableResult
-    func setFont(_ font: Font, uiFont: UIFont) -> DoubleAttributedString {
+    public func setFont(_ font: Font, uiFont: UIFont) -> DoubleAttributedString {
         one.addAttributes([.font: uiFont], range: NSRange(location: 0, length: one.length))
         two.font = font
         return self
     }
 
     @discardableResult
-    func setColor(_ color: Color) -> DoubleAttributedString {
+    public func setColor(_ color: Color) -> DoubleAttributedString {
         one.addAttributes([.foregroundColor: UIColor(color)], range: NSRange(location: 0, length: one.length))
         var ac = AttributeContainer()
         ac.foregroundColor = color
@@ -609,7 +609,7 @@ public class DoubleAttributedString: Equatable, Hashable {
     }
 
     @discardableResult
-    func setBaselineOffset(_ offset: CGFloat) -> DoubleAttributedString {
+    public func setBaselineOffset(_ offset: CGFloat) -> DoubleAttributedString {
         one.addAttribute(.baselineOffset, value: offset, range: NSRange(location: 0, length: one.length))
         two.baselineOffset = offset
         return self
@@ -662,12 +662,12 @@ struct BibleTextBlock: Identifiable {
 
 }
 
-struct DoubleBibleTextFonts {
+public struct DoubleBibleTextFonts {
     let one: BibleTextUIFonts
     let two: BibleTextFonts
 }
 
-struct DoubleFont {
+public struct DoubleFont {
     let one: UIFont
     let two: Font
 }

@@ -238,9 +238,9 @@ public struct BibleTextView: View {
 }
 
 public struct BibleVerseData {
-    let chapter: Int
-    let verse: Int
-    let footnotes: [AttributedString]
+    public let chapter: Int
+    public let verse: Int
+    public let footnotes: [AttributedString]
 }
 
 public enum BibleTextFootnoteMode {
@@ -250,14 +250,14 @@ public enum BibleTextFootnoteMode {
 }
 
 public struct BibleTextOptions {
-    var fontFamily: String
-    var fontSize: CGFloat
-    var lineSpacing: CGFloat?
-    var paragraphSpacing: CGFloat?
-    var textColor: Color?
-    var wocColor = Color(red: 1, green: 0x3d / 256, blue: 0x4d / 256)  // this is YouVersion red. Use F04C59 in dark mode, though.
-    var footnoteMode: BibleTextFootnoteMode = .none
-    var footnoteMarker: DoubleAttributedString?
+    public var fontFamily: String
+    public var fontSize: CGFloat
+    public var lineSpacing: CGFloat?
+    public var paragraphSpacing: CGFloat?
+    public var textColor: Color?
+    public var wocColor = Color(red: 1, green: 0x3d / 256, blue: 0x4d / 256)  // this is YouVersion red. Use F04C59 in dark mode, though.
+    public var footnoteMode: BibleTextFootnoteMode = .none
+    public var footnoteMarker: DoubleAttributedString?
 
     public init(fontFamily: String = "Times New Roman",
                 fontSize: CGFloat = 16,

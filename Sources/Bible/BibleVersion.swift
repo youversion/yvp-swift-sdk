@@ -3,8 +3,8 @@ import Foundation
 @MainActor
 public class BibleVersion: ObservableObject {
     @Published public var isReady = false  // true when the metadata is cached
+    public let code: Int  // version code, e.g. 111 for NIV
 
-    let code: Int  // version code, e.g. 111 for NIV
     private var metadata: BibleVersionData?
 
     // MARK: - Init and loading

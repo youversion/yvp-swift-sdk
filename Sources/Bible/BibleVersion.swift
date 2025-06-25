@@ -128,8 +128,7 @@ public class BibleVersion: ObservableObject {
                 return [bcPart1, bcPart2, bcPart3]
             }
             return [bcPart1, bcPart2, bcPart3, "-", String(c2)]
-        }
-        else if c != c2 {
+        } else if c != c2 {
             var vNotZero = v
             if vNotZero == 0 {
                 vNotZero = 1
@@ -215,10 +214,15 @@ public class BibleVersion: ObservableObject {
             y = b
         }
         var further: BibleReference
-        if x.c2 > y.c2 {further = x}
-        else if x.c2 < y.c2 {further = y}
-        else if x.v2 > y.v2 {further = x}
-        else {further = y}
+        if x.c2 > y.c2 {
+            further = x
+        } else if x.c2 < y.c2 {
+            further = y
+        } else if x.v2 > y.v2 {
+            further = x
+        } else {
+            further = y
+        }
         return BibleReference(versionCode: x.versionCode, b: x.book!, c: x.c, v: x.v, c2: further.c2, v2: further.v2)
     }
 

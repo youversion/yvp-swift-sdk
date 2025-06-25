@@ -195,13 +195,15 @@ public struct BibleTextView: View {
         let strings: [TableCellString]
     }
 
-
     // MARK: - Utilities
     private func findBlockById(_ id: UUID) -> BibleTextBlock? {
         blocks.first { $0.id == id }
     }
 
-    private func verseNumFromPoint(pointInView: CGPoint, blockId: UUID, blockText: NSAttributedString, extraChars: Int) -> Int? {
+    private func verseNumFromPoint(pointInView: CGPoint,
+                                   blockId: UUID,
+                                   blockText: NSAttributedString,
+                                   extraChars: Int) -> Int? {
         guard let ourFrame = ourFrames[blockId] else {
             return nil
         }
@@ -221,8 +223,14 @@ public struct BibleTextView: View {
         return verse
     }
 
-    private func handleTap(at pointInView: CGPoint, blockId: UUID, blockText: NSAttributedString, extraChars: Int = 0) {
-        if let verse = verseNumFromPoint(pointInView: pointInView, blockId: blockId, blockText: blockText, extraChars: extraChars) {
+    private func handleTap(at pointInView: CGPoint,
+                           blockId: UUID,
+                           blockText: NSAttributedString,
+                           extraChars: Int = 0) {
+        if let verse = verseNumFromPoint(pointInView: pointInView,
+                                         blockId: blockId,
+                                         blockText: blockText,
+                                         extraChars: extraChars) {
             if let ourFrame = ourFrames[blockId],
                 let block = findBlockById(blockId) {
                 let pointInSelf = CGPoint(x: pointInView.x + ourFrame.origin.x,
@@ -255,7 +263,7 @@ public struct BibleTextOptions {
     public var lineSpacing: CGFloat?
     public var paragraphSpacing: CGFloat?
     public var textColor: Color?
-    public var wocColor = Color(red: 1, green: 0x3d / 256, blue: 0x4d / 256)  // this is YouVersion red. Use F04C59 in dark mode, though.
+    public var wocColor = Color(red: 1, green: 0x3d / 256, blue: 0x4d / 256)  // YouVersion red. F04C59 in dark mode.
     public var footnoteMode: BibleTextFootnoteMode = .none
     public var footnoteMarker: DoubleAttributedString?
 

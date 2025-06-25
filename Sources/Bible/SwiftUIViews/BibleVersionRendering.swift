@@ -204,7 +204,9 @@ struct BibleVersionRendering {
     }
 
     private static func handleNodeRow(node: Youversion_Red_Biblecontent_Api_Model_Youversion_ApiNode,
-                                      stateIn: StateIn, stateDown parentStateDown: StateDown, stateUp: inout StateUp) -> [DoubleAttributedString] {
+                                      stateIn: StateIn,
+                                      stateDown parentStateDown: StateDown,
+                                      stateUp: inout StateUp) -> [DoubleAttributedString] {
         let stateDown = parentStateDown
         var thisRow: [DoubleAttributedString] = []
         for kid in node.children {
@@ -223,7 +225,9 @@ struct BibleVersionRendering {
     }
 
     private static func handleNodeTable(node: Youversion_Red_Biblecontent_Api_Model_Youversion_ApiNode,
-                                        stateIn: StateIn, stateDown parentStateDown: StateDown, stateUp: inout StateUp,
+                                        stateIn: StateIn,
+                                        stateDown parentStateDown: StateDown,
+                                        stateUp: inout StateUp,
                                         ret: inout [BibleTextBlock]) {
         let stateDown = parentStateDown
         var rows: [[DoubleAttributedString]] = []
@@ -253,7 +257,9 @@ struct BibleVersionRendering {
     }
 
     private static func handleNodeBlock(node: Youversion_Red_Biblecontent_Api_Model_Youversion_ApiNode,
-                                        stateIn: StateIn, stateDown parentStateDown: StateDown, stateUp: inout StateUp,
+                                        stateIn: StateIn,
+                                        stateDown parentStateDown: StateDown,
+                                        stateUp: inout StateUp,
                                         ret: inout [BibleTextBlock]) {
         var stateDown = parentStateDown
         var marginTop: CGFloat = 0
@@ -265,10 +271,14 @@ struct BibleVersionRendering {
             return
         }
         if node.classes.contains("cl") {
+            // "cl" means: Chapter label used for translations that add a word such
+            // as "Chapter"... we show that another way in our UI.
             return
-        }  // "cl" # Chapter label used for translations that add a word such as "Chapter"... we show that another way in our UI.
+        }
 
-        interpretBlockClasses(node.classes, stateIn: stateIn, stateDown: &stateDown, stateUp: &stateUp,
+        interpretBlockClasses(node.classes,
+                              stateIn: stateIn,
+                              stateDown: &stateDown, stateUp: &stateUp,
                               marginTop: &marginTop)
 
         for kid in node.children {
@@ -310,7 +320,9 @@ struct BibleVersionRendering {
         }
     }
 
-    private static func createBlock(stateDown: StateDown, stateUp: inout StateUp, marginTop: CGFloat) -> BibleTextBlock {
+    private static func createBlock(stateDown: StateDown,
+                                    stateUp: inout StateUp,
+                                    marginTop: CGFloat) -> BibleTextBlock {
         let block = BibleTextBlock(text: stateUp.text,
                                    chapter: stateUp.chapter,
                                    verseOffsets: stateUp.verseOffsets,
@@ -324,7 +336,9 @@ struct BibleVersionRendering {
     }
 
     private static func interpretBlockClasses(_ classes: [String],
-                                              stateIn: StateIn, stateDown: inout StateDown, stateUp: inout StateUp,
+                                              stateIn: StateIn,
+                                              stateDown: inout StateDown,
+                                              stateUp: inout StateUp,
                                               marginTop: inout CGFloat) {
         let fonts = stateIn.fonts
         let indentStep = 1
@@ -436,7 +450,9 @@ struct BibleVersionRendering {
     }
 
     private static func interpretTextAttr(_ node: Youversion_Red_Biblecontent_Api_Model_Youversion_ApiNode,
-                                          stateIn: StateIn, stateDown: inout StateDown, stateUp: inout StateUp) {
+                                          stateIn: StateIn,
+                                          stateDown: inout StateDown,
+                                          stateUp: inout StateUp) {
         let fonts = stateIn.fonts
         // this is a weird place to do this, but the tag is on a block, and block classes don't usually change fonts, so...
         if stateDown.smallcaps {

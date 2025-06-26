@@ -1,19 +1,16 @@
 import Foundation
 
 public struct BibleHighlight: CustomDebugStringConvertible, Sendable {
-    public var versionCode: Int
-    public var chapter: Int
-    public var verse: Int
-    public var color: String  // a hex value, e.g. "#FF00FF"
-
-    public init(versionCode: Int, chapter: Int, verse: Int, color: String) {
-        self.versionCode = versionCode
-        self.chapter = chapter
-        self.verse = verse
-        self.color = color
-    }
+    public let versionCode: Int
+    public let chapter: Int
+    public let verse: Int
+    public let color: String  // a hex value, e.g. "#FF00FF"
 
     public var debugDescription: String {
-        return "\(chapter):\(verse) (\(versionCode)): \(color)"
+        "\(chapter):\(verse) (\(versionCode)): \(color)"
+    }
+    
+    static var preview: BibleHighlight {
+        BibleHighlight(versionCode: 1, chapter: 3, verse: 2, color: "#FFF9B1")
     }
 }

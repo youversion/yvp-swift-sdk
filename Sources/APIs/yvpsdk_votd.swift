@@ -18,7 +18,7 @@ struct VotdResponse: Codable {
 public func fetchVerseOfTheDay(lat: String,
                                versionCode: Int = 1) async throws -> YouVersionVerseOfTheDay {
     guard let appKey = YouVersionPlatformConfiguration.appKey else {
-        fatalError("YouVersionPlatformConfiguration.appKey must be set.")
+        preconditionFailure("YouVersionPlatformConfiguration.appKey must be set.")
     }
     if appKey == "preview" {
         return YouVersionVerseOfTheDay(

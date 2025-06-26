@@ -3,11 +3,12 @@ import Foundation
 public func fetchHighlightsForChapter(lat: String,
                                       usfm: String,
                                       version: BibleVersion) async throws -> [BibleHighlight] {
+    if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
+        return [BibleHighlight.preview]
+    }
+    
     guard let appKey = YouVersionPlatformConfiguration.appKey else {
         preconditionFailure("YouVersionPlatformConfiguration.appKey must be set.")
-    }
-    if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
-        return [BibleHighlight(versionCode: version.code, chapter: 3, verse: 2, color: "#FFF9B1")]
     }
 
     var components = URLComponents()
@@ -63,9 +64,9 @@ private struct BibleHighlightsResponseList: Codable {
 }
 
 private struct BibleHighlightResponse: Codable {
-    var color: String?
-    var created_dt: Int?
-    var updated_dt: Int?
-    var usfm: String?
-    var version: Int?
+    let color: String?
+    let created_dt: Int?
+    let updated_dt: Int?
+    let usfm: String?
+    let version: Int?
 }

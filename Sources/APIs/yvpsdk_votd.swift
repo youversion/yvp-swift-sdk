@@ -1,18 +1,24 @@
 import Foundation
 
-public struct YouVersionVerseOfTheDay: Sendable {
+public struct YouVersionVerseOfTheDay: Codable, Sendable {
     public let reference: String
     public let abbreviation: String
     public let text: String
     public let copyright: String
-}
-
-// private; only for decoding the server response
-struct VotdResponse: Codable {
-    let human: String
-    let text: String
-    let copyright: String
-    let abbreviation: String
+    
+    enum CodingKeys: String, CodingKey {
+        case reference = "human"
+        case abbreviation, text, copyright
+    }
+    
+    static var preview: YouVersionVerseOfTheDay {
+        YouVersionVerseOfTheDay(
+            reference: "John 1:1",
+            abbreviation: "KJV",
+            text: "In the beginning was the Word, and the Word was with God, and the Word was God. PREVIEW ONLY.",
+            copyright: "Copyright goes here."
+        )
+    }
 }
 
 public func fetchVerseOfTheDay(lat: String,
@@ -20,12 +26,9 @@ public func fetchVerseOfTheDay(lat: String,
     guard let appKey = YouVersionPlatformConfiguration.appKey else {
         preconditionFailure("YouVersionPlatformConfiguration.appKey must be set.")
     }
+    
     if appKey == "preview" {
-        return YouVersionVerseOfTheDay(
-            reference: "John 1:1",
-            abbreviation: "KJV",
-            text: "In the beginning was the Word, and the Word was with God, and the Word was God. PREVIEW ONLY.",
-            copyright: "Copyright goes here.")
+        return YouVersionVerseOfTheDay.preview
     }
 
     var components = URLComponents()
@@ -44,13 +47,8 @@ public func fetchVerseOfTheDay(lat: String,
     var request = URLRequest(url: url)
     request.setValue(YouVersionPlatformConfiguration.appKey, forHTTPHeaderField: "apikey")
     let (data, _) = try await URLSession.shared.data(for: request)
-    guard let decodedResponse = try? JSONDecoder().decode(VotdResponse.self, from: data) else {
+    guard let decodedResponse = try? JSONDecoder().decode(YouVersionVerseOfTheDay.self, from: data) else {
         throw URLError(.badServerResponse)
     }
-
-    return YouVersionVerseOfTheDay(
-        reference: decodedResponse.human,
-        abbreviation: decodedResponse.abbreviation,
-        text: decodedResponse.text,
-        copyright: decodedResponse.copyright)
+    return decodedResponse
 }

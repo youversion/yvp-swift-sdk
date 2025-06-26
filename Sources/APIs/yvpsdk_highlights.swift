@@ -4,7 +4,7 @@ public func fetchHighlightsForChapter(lat: String,
                                       usfm: String,
                                       version: BibleVersion) async throws -> [BibleHighlight] {
     guard let appKey = YouVersionPlatformConfiguration.appKey else {
-        fatalError("YouVersionPlatformConfiguration.appKey must be set.")
+        preconditionFailure("YouVersionPlatformConfiguration.appKey must be set.")
     }
     if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
         return [BibleHighlight(versionCode: version.code, chapter: 3, verse: 2, color: "#FFF9B1")]

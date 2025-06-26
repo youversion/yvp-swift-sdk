@@ -14,7 +14,7 @@ struct BibleVersionAPIs {
     /// Fetches version metadata from the server
     static func fetchMetadata(code: Int) async throws -> Data {
         guard let appKey = YouVersionPlatformConfiguration.appKey else {
-            fatalError("YouVersionPlatformConfiguration.appKey must be set.")
+            preconditionFailure("YouVersionPlatformConfiguration.appKey must be set.")
         }
 
         let host = YouVersionPlatformConfiguration.apiHost
@@ -49,7 +49,7 @@ struct BibleVersionAPIs {
     /// Fetches a single chapter's content from the server
     static func fetchChapter(ref: BibleReference) async throws -> YVDOMContent {
         guard let appKey = YouVersionPlatformConfiguration.appKey else {
-            fatalError("YouVersionPlatformConfiguration.appKey must be set.")
+            preconditionFailure("YouVersionPlatformConfiguration.appKey must be set.")
         }
 
         guard let chap = ref.toUSFMOfChapter else {
@@ -92,7 +92,7 @@ struct BibleVersionAPIs {
     /// Finds Bible versions by language code
     static func findVersions(byLanguage lang: String? = nil) async throws -> [BibleVersionOverview] {
         guard let appKey = YouVersionPlatformConfiguration.appKey else {
-            fatalError("YouVersionPlatformConfiguration.appKey must be set.")
+            preconditionFailure("YouVersionPlatformConfiguration.appKey must be set.")
         }
 
         if let lang = lang, lang.count != 3 {

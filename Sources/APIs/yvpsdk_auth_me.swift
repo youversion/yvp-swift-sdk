@@ -1,24 +1,39 @@
 import Foundation
 
-public struct YouVersionUserInfo: Sendable {
+public struct YouVersionUserInfo: Codable, Sendable {
     public let firstName: String
     public let lastName: String
-    public let userId: String
-    public let avatarUrl: String?
-}
-
-// private; only for decoding the server response
-struct AuthMeResponse: Codable {
-    let first_name: String // swiftlint:disable:this identifier_name
-    let last_name: String // swiftlint:disable:this identifier_name
-    let avatar_url: String? // swiftlint:disable:this identifier_name
-    let id: Int
+    public let userId: Int
+    public let avatarUrlFormat: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case firstName = "first_name"
+        case lastName = "last_name"
+        case userId = "id"
+        case avatarUrlFormat = "avatar_url"
+    }
+    
+    public var avatarUrl: URL? {
+        guard var urlString = avatarUrlFormat else {
+            return nil
+        }
+        
+        if urlString.hasPrefix("//") {
+            urlString = "https:" + urlString
+        }
+        urlString = urlString.replacingOccurrences(of: "{width}", with: "200")
+        urlString = urlString.replacingOccurrences(of: "{height}", with: "200")
+        return URL(string: urlString)
+    }
+    
+    static var preview: YouVersionUserInfo {
+        YouVersionUserInfo(firstName: "John", lastName: "Smith", userId: 12345, avatarUrlFormat: nil)
+    }
 }
 
 public func fetchUserInfo(lat: String) async throws -> YouVersionUserInfo {
     if lat == "preview" {
-        let info = YouVersionUserInfo(firstName: "John", lastName: "Smith", userId: "12345", avatarUrl: nil)
-        return info
+        return YouVersionUserInfo.preview
     }
     
     var components = URLComponents()
@@ -34,19 +49,8 @@ public func fetchUserInfo(lat: String) async throws -> YouVersionUserInfo {
     }
     
     let (data, _) = try await URLSession.shared.data(from: url)
-    guard let decodedResponse = try? JSONDecoder().decode(AuthMeResponse.self, from: data) else {
+    guard var decodedResponse = try? JSONDecoder().decode(YouVersionUserInfo.self, from: data) else {
         throw URLError(.badServerResponse)
     }
-    var avatarUrl = decodedResponse.avatar_url
-    if avatarUrl != nil {
-        if avatarUrl!.hasPrefix("//") {
-            avatarUrl = "https:" + avatarUrl!
-        }
-        avatarUrl = avatarUrl?.replacingOccurrences(of: "{width}", with: "200")
-        avatarUrl = avatarUrl?.replacingOccurrences(of: "{height}", with: "200")
-    }
-    return YouVersionUserInfo(firstName: decodedResponse.first_name,
-                              lastName: decodedResponse.last_name,
-                              userId: String(decodedResponse.id),
-                              avatarUrl: avatarUrl)
+    return decodedResponse
 }

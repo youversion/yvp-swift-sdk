@@ -11,48 +11,53 @@ public enum YVPPermission: String, CaseIterable, Hashable, Codable, CustomString
     public var description: String { rawValue }
 }
 
-public func login(
-    contextProvider: ASWebAuthenticationPresentationContextProviding,
-    required: Set<YVPPermission>,
-    optional: Set<YVPPermission>,
-    completion: @escaping (Result<YouVersionLoginResult, Error>) -> Void
-) {
+@MainActor
+public func logIn(
+    requiredPermissions: Set<YVPPermission>,
+    optionalPermissions: Set<YVPPermission>,
+    contextProvider: ASWebAuthenticationPresentationContextProviding
+) async throws -> YouVersionLoginResult {
     guard let appKey = YouVersionPlatformConfiguration.appKey else {
         preconditionFailure("YouVersionPlatformConfiguration.appKey must be set")
     }
+    
     guard let authURL = buildAuthURL(
         appKey: appKey,
-        requiredPermissions: Array(required),
-        optionalPermissions: Array(optional)
+        requiredPermissions: requiredPermissions,
+        optionalPermissions: optionalPermissions
     ) else {
-        completion(.failure(URLError(.badURL)))
-        return
+        throw URLError(.badURL)
     }
-
-    let session = ASWebAuthenticationSession(
-        url: authURL,
-        callbackURLScheme: "youversionauth"
-    ) { callbackURL, error in
-        if let error = error {
-            completion(.failure(error))
-        } else if let callbackURL = callbackURL {
-            do {
-                let result = try parseAuthCallback(callbackURL)
-                completion(.success(result))
-            } catch {
-                completion(.failure(error))
+    
+    return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<YouVersionLoginResult, Error>) in
+        let session = ASWebAuthenticationSession(
+            url: authURL,
+            callbackURLScheme: "youversionauth"
+        ) { callbackURL, error in
+            Task { @MainActor in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else if let callbackURL {
+                    do {
+                        let result = try parseAuthCallback(callbackURL)
+                        continuation.resume(returning: result)
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+                } else {
+                    continuation.resume(throwing: URLError(.badServerResponse))
+                }
             }
-        } else {
-            completion(.failure(URLError(.badServerResponse)))
         }
+        
+        session.presentationContextProvider = contextProvider
+        session.start()
     }
-    session.presentationContextProvider = contextProvider
-    session.start()
 }
 
 private func buildAuthURL(appKey: String,
-                          requiredPermissions: [YVPPermission] = [],
-                          optionalPermissions: [YVPPermission] = []) -> URL? {
+                          requiredPermissions: Set<YVPPermission> = [],
+                          optionalPermissions: Set<YVPPermission> = []) -> URL? {
     var components = URLComponents()
     components.scheme = "https"
     components.host = YouVersionPlatformConfiguration.apiHost

@@ -21,7 +21,7 @@ public func logIn(
         preconditionFailure("YouVersionPlatformConfiguration.appKey must be set")
     }
     
-    guard let authURL = buildAuthURL(
+    guard let url = URLBuilder.authURL(
         appKey: appKey,
         requiredPermissions: requiredPermissions,
         optionalPermissions: optionalPermissions
@@ -31,7 +31,7 @@ public func logIn(
     
     return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<YouVersionLoginResult, Error>) in
         let session = ASWebAuthenticationSession(
-            url: authURL,
+            url: url,
             callbackURLScheme: "youversionauth"
         ) { callbackURL, error in
             Task { @MainActor in
@@ -55,22 +55,6 @@ public func logIn(
     }
 }
 
-private func buildAuthURL(appKey: String,
-                          requiredPermissions: Set<YVPPermission> = [],
-                          optionalPermissions: Set<YVPPermission> = []) -> URL? {
-    var components = URLComponents()
-    components.scheme = "https"
-    components.host = YouVersionPlatformConfiguration.apiHost
-    components.path = "/auth/login"
-    components.queryItems = [
-        URLQueryItem(name: "app_id", value: appKey),
-        URLQueryItem(name: "language", value: "en"),  // TODO load from the system
-        URLQueryItem(name: "required_perms", value: requiredPermissions.map { $0.rawValue }.joined(separator: ",")),
-        URLQueryItem(name: "opt_perms", value: optionalPermissions.map { $0.rawValue }.joined(separator: ","))
-    ]
-    return components.url
-}
-
 public struct YouVersionLoginResult: Sendable {
     public let lat: String?
     public let permissions: [YVPPermission]
@@ -92,7 +76,7 @@ private func parseAuthCallback(_ callbackURL: URL) throws -> YouVersionLoginResu
         .compactMap { YVPPermission(rawValue: String($0)) }
     ?? []
 
-    if status == "success", let latValue = latValue, let yvpUserId = yvpUserId {
+    if status == "success", let latValue, let yvpUserId {
         return YouVersionLoginResult(lat: latValue, permissions: perms, errorMsg: nil, yvpUserId: yvpUserId)
     } else if status == "canceled" {
         return YouVersionLoginResult(lat: nil, permissions: [], errorMsg: nil, yvpUserId: nil)

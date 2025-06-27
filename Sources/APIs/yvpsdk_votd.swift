@@ -31,16 +31,7 @@ public func fetchVerseOfTheDay(lat: String,
         return YouVersionVerseOfTheDay.preview
     }
 
-    var components = URLComponents()
-    components.scheme = "https"
-    components.host = YouVersionPlatformConfiguration.apiHost
-    components.path = "/votd/today"
-    components.queryItems = [
-        URLQueryItem(name: "lat", value: lat),
-        URLQueryItem(name: "translationId", value: "\(versionCode)"),
-        URLQueryItem(name: "platform", value: "iOS")
-    ]
-    guard let url = components.url else {
+    guard let url = URLBuilder.votdURL(versionId: versionCode, accessToken: lat) else {
         throw URLError(.badURL)
     }
 

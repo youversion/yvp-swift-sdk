@@ -36,15 +36,7 @@ public func fetchUserInfo(lat: String) async throws -> YouVersionUserInfo {
         return YouVersionUserInfo.preview
     }
     
-    var components = URLComponents()
-    components.scheme = "https"
-    components.host = YouVersionPlatformConfiguration.apiHost
-    components.path = "/auth/me"
-    components.queryItems = [
-        URLQueryItem(name: "lat", value: lat)
-    ]
-    
-    guard let url = components.url else {
+    guard let url = URLBuilder.userURL(accessToken: lat) else {
         throw URLError(.badURL)
     }
     

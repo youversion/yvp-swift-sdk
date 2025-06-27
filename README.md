@@ -123,7 +123,7 @@ private func loadUI(lat: String) {
         }
         do {
             let votd = try await YouVersionPlatform.verseOfTheDay(versionId: 1)
-            self.votdTitle = "\(votd.reference) (\(votd.translation))"
+            self.votdTitle = "\(votd.reference) (\(votd.abbreviation))"
             self.votdText = votd.text
             self.votdCopyright = votd.copyright
         } catch {

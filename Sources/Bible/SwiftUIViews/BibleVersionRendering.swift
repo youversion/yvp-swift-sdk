@@ -303,7 +303,7 @@ struct BibleVersionRendering {
             return
         }
         if node.classes.contains("cl") {
-            // "cl" means: Chapter label used for translations that add a word such
+            // "cl" means: Chapter label used for versions that add a word such
             // as "Chapter"... we show that another way in our UI.
             return
         }

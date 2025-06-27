@@ -45,12 +45,11 @@ public enum URLBuilder {
         return components.url
     }
     
-    static func votdURL(versionId: Int, accessToken: String) -> URL? {
+    static func votdURL(versionId: Int) -> URL? {
         var components = baseURLComponents
         components.path = "/votd/today"
         components.queryItems = [
-            URLQueryItem(name: "lat", value: accessToken),
-            URLQueryItem(name: "translationId", value: String(versionId))
+            URLQueryItem(name: "version", value: String(versionId))
         ]
         return components.url
     }

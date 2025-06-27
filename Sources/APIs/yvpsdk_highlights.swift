@@ -39,8 +39,8 @@ public func highlightsForChapter(
         }
         return BibleHighlight(
             versionId: response.version ?? 0,
-            chapter: reference.c,
-            verse: reference.v,
+            chapter: reference.chapterStart,
+            verse: reference.verseStart,
             color: response.color ?? "#FFF9B1"
         )
     }

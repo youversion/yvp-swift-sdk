@@ -67,12 +67,12 @@ class BibleVersionCache {
     /// This probably is not a function that you want to call.
     /// Use `chapter(reference:)` since it'll also pull from the server if necessary.
     static func chapterFromCache(reference: BibleReference) -> YVDOMContent? {
-        guard let book = reference.book,
-              let usfm = reference.toUSFMOfChapter else {
+        guard let book = reference.bookUSFM,
+              let usfm = reference.chapterUSFM else {
             return nil
         }
 
-        let cacheKey = "\(reference.versionId).\(book).\(reference.c)"
+        let cacheKey = "\(reference.versionId).\(book).\(reference.chapterStart)"
         if let c = chaptersCache[cacheKey] {
             return c
         }
@@ -100,13 +100,13 @@ class BibleVersionCache {
     }
 
     private static func chapterFromServer(reference: BibleReference) async -> YVDOMContent? {
-        guard let book = reference.book else {
+        guard let book = reference.bookUSFM else {
             return nil
         }
 
         do {
             let content = try await BibleVersionAPIs.chapter(reference: reference)
-            let cacheKey = "\(reference.versionId).\(book).\(reference.c)"
+            let cacheKey = "\(reference.versionId).\(book).\(reference.chapterStart)"
             chaptersCache[cacheKey] = content
             writeChapterToCache(reference: reference, content: content)
             return content
@@ -120,7 +120,7 @@ class BibleVersionCache {
         // TODO: write this.
         // 1. see if we already have a directory at urlForCachedVersion() and create if not.
         // 2. consider if an old file needs to be deleted (if the disk cache is "full".)
-        // 3. write content to fileURL = dir.appendingPathComponent(reference.toUSFMOfChapter)
+        // 3. write content to fileURL = dir.appendingPathComponent(reference.chapterUSFM)
     }
 
     private static func urlForCachedVersion(_ versionId: Int, offlineBuildVersion: Int) -> URL {

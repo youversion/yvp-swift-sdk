@@ -53,7 +53,7 @@ enum BibleVersionAPIs {
             preconditionFailure("YouVersionPlatformConfiguration.appKey must be set.")
         }
 
-        guard let chapter = reference.toUSFMOfChapter else {
+        guard let chapter = reference.chapterUSFM else {
             throw BibleVersionAPIError.invalidDownload
         }
 

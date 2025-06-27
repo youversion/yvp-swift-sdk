@@ -9,6 +9,9 @@ jobs:
       # Check out the repository
       - uses: actions/checkout@v4
 
+      - uses: SwiftyLab/setup-swift@latest
+        with:
+          swift-version: "6.0"
       - name: Display Swift and Xcode versions
         run: |
           swift --version

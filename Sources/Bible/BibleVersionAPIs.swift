@@ -17,9 +17,10 @@ enum BibleVersionAPIs {
             preconditionFailure("YouVersionPlatformConfiguration.appKey must be set.")
         }
 
-        let host = YouVersionPlatformConfiguration.apiHost
-        let env = YouVersionPlatformConfiguration.hostEnv ?? ""
-        let url = URL(string: "https://\(host)/bible/version?version=\(versionId)\(env)")!
+        guard let url = URLBuilder.versionURL(versionId: versionId) else {
+            throw URLError(.badURL)
+        }
+        
         var request = URLRequest(url: url)
         request.setValue(appKey, forHTTPHeaderField: "apikey")
 
@@ -52,13 +53,13 @@ enum BibleVersionAPIs {
             preconditionFailure("YouVersionPlatformConfiguration.appKey must be set.")
         }
 
-        guard let chap = reference.toUSFMOfChapter else {
+        guard let chapter = reference.toUSFMOfChapter else {
             throw BibleVersionAPIError.invalidDownload
         }
 
-        let host = YouVersionPlatformConfiguration.apiHost
-        let env = YouVersionPlatformConfiguration.hostEnv ?? ""
-        let url = URL(string: "https://\(host)/bible/chapter?version=\(reference.versionId)&usfm=\(chap)\(env)")!
+        guard let url = URLBuilder.chapterURL(usfm: chapter, versionId: reference.versionId) else {
+            throw URLError(.badURL)
+        }
 
         var request = URLRequest(url: url)
         request.setValue(appKey, forHTTPHeaderField: "apikey")
@@ -89,20 +90,19 @@ enum BibleVersionAPIs {
     // MARK: - Version Discovery
 
     /// Finds Bible versions by language code
-    static func findVersions(byLanguage lang: String? = nil) async throws -> [BibleVersionOverview] {
+    static func versions(forLanguageTag languageTag: String? = nil) async throws -> [BibleVersionOverview] {
         guard let appKey = YouVersionPlatformConfiguration.appKey else {
             preconditionFailure("YouVersionPlatformConfiguration.appKey must be set.")
         }
 
-        if let lang, lang.count != 3 {
-            print("Invalid language code: \(lang)")
+        guard let languageTag, languageTag.count == 3 else {
+            print("Invalid language code: \(languageTag)")
             return []
         }
-
-        let langParam = lang == nil ? "" : "language=/\(lang!)"
-        let host = YouVersionPlatformConfiguration.apiHost
-        let env = YouVersionPlatformConfiguration.hostEnv ?? ""
-        let url = URL(string: "https://\(host)/bible/versions?\(langParam)\(env)")!
+        
+        guard let url = URLBuilder.versionsURL(languageTag: languageTag) else {
+            throw URLError(.badURL)
+        }
 
         var request = URLRequest(url: url)
         request.setValue(appKey, forHTTPHeaderField: "apikey")

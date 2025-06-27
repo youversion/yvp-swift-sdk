@@ -43,7 +43,7 @@ public class BibleVersion: ObservableObject {
 
     public static func findByLanguage(_ lang: String? = nil) async -> [BibleVersionOverview] {
         do {
-            return try await BibleVersionAPIs.findVersions(byLanguage: lang)
+            return try await BibleVersionAPIs.versions(forLanguageTag: lang)
         } catch {
             print("findByLanguage error: \(error.localizedDescription)")
             return []

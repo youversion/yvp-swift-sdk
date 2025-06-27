@@ -105,10 +105,10 @@ class BibleVersionCache {
         }
 
         do {
-            let content = try await BibleVersionAPIs.chapter(ref: reference)
+            let content = try await BibleVersionAPIs.chapter(reference: reference)
             let cacheKey = "\(reference.versionId).\(book).\(reference.c)"
             chaptersCache[cacheKey] = content
-            writeChapterToCache(ref: reference, content: content)
+            writeChapterToCache(reference: reference, content: content)
             return content
         } catch {
             print("could not get a chapter from the server: \(error.localizedDescription)")
@@ -116,11 +116,11 @@ class BibleVersionCache {
         }
     }
 
-    private static func writeChapterToCache(ref: BibleReference, content: YVDOMContent) {
+    private static func writeChapterToCache(reference: BibleReference, content: YVDOMContent) {
         // TODO: write this.
         // 1. see if we already have a directory at urlForCachedVersion() and create if not.
         // 2. consider if an old file needs to be deleted (if the disk cache is "full".)
-        // 3. write content to fileURL = dir.appendingPathComponent(ref.toUSFMOfChapter)
+        // 3. write content to fileURL = dir.appendingPathComponent(reference.toUSFMOfChapter)
     }
 
     private static func urlForCachedVersion(_ versionId: Int, offlineBuildVersion: Int) -> URL {

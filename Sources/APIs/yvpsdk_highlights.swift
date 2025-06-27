@@ -34,13 +34,13 @@ public func highlightsForChapter(
     }
     
     func convertHighlightResponse(_ response: BibleHighlightResponse, version: BibleVersion) -> BibleHighlight? {
-        guard let usfm = response.usfm, let ref = version.simpleUsfmParse(usfm) else {
+        guard let usfm = response.usfm, let reference = version.simpleUsfmParse(usfm) else {
             return nil
         }
         return BibleHighlight(
             versionId: response.version ?? 0,
-            chapter: ref.c,
-            verse: ref.v,
+            chapter: reference.c,
+            verse: reference.v,
             color: response.color ?? "#FFF9B1"
         )
     }

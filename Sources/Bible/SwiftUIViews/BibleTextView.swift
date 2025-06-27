@@ -4,7 +4,7 @@ public struct BibleTextView: View {
 
     public typealias VerseTapAction = (BibleVerseData, CGPoint) -> Void
 
-    private let ref: BibleReference
+    private let reference: BibleReference
     private let options: BibleTextOptions
     private let highlights: [BibleHighlight]
     private let onVerseTap: VerseTapAction?
@@ -16,12 +16,12 @@ public struct BibleTextView: View {
     @Environment(\.colorScheme) var colorScheme  // for detecting when the user switches in/out of dark mode
 
     public init(
-        _ ref: BibleReference,
+        _ reference: BibleReference,
         options: BibleTextOptions? = nil,
         highlights: [BibleHighlight] = [],
         onVerseTap: VerseTapAction? = nil
     ) {
-        self.ref = ref
+        self.reference = reference
         let theOptions = options ?? BibleTextOptions()
         self.options = theOptions
         self.highlights = highlights
@@ -33,22 +33,22 @@ public struct BibleTextView: View {
 
     public var body: some View {
         VStack(alignment: rtl ? .trailing : .leading) {
-            if self.blocks.isEmpty {
+            if blocks.isEmpty {
                 Spacer()
             } else {
-                ForEach(self.blocks, id: \.id) { block in
+                ForEach(blocks, id: \.id) { block in
                     renderView(for: block)
                 }
             }
         }
         .task { await loadBlocks() }
-        .onChange(of: ref) { Task { await loadBlocks() } }
+        .onChange(of: reference) { Task { await loadBlocks() } }
         .coordinateSpace(name: "BibleTextView")
     }
     
     private func loadBlocks() async {
         blocks = await BibleVersionRendering.textBlocksAsync(
-            ref,
+            reference,
             renderFootnotes: options.footnoteMode != .none,
             footnoteMarker: options.footnoteMarker,
             wocColor: options.wocColor,

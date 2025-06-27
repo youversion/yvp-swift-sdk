@@ -2,12 +2,12 @@ import SwiftUI
 
 struct BibleVersionRendering {
 
-    public static func plainTextOf(_ ref: BibleReference) -> String {
+    public static func plainTextOf(_ reference: BibleReference) -> String {
         // the fonts aren't used in this case, but are required.
         let familyName = "Times New Roman"
         let uiFonts = BibleTextUIFonts(familyName: familyName)
         let blocks = textBlocks(
-            ref,
+            reference,
             renderVerseNumbers: false,
             renderHeadlines: false,
             renderFootnotes: false,
@@ -22,7 +22,7 @@ struct BibleVersionRendering {
     // Marked as @MainActor due to NSMutableAttributedStrings in BibleTextBlocks.
     @MainActor
     static func textBlocksAsync(
-        _ ref: BibleReference,
+        _ reference: BibleReference,
         renderVerseNumbers: Bool = true,
         renderHeadlines: Bool = true,
         renderFootnotes: Bool = false,
@@ -33,12 +33,12 @@ struct BibleVersionRendering {
     ) async -> [BibleTextBlock] {
         // The normal textBlocks() is sync, so it won't fetch from the server.
         // So, ensure that every chapter needed is available. This warms the cache up!
-        guard let book = ref.book else {
+        guard let book = reference.book else {
             return []
         }
-        var c = ref.c
-        while c <= ref.c2 {
-            let chapterRef = BibleReference(versionId: ref.versionId, b: book, c: c, v: 1)
+        var c = reference.c
+        while c <= reference.c2 {
+            let chapterRef = BibleReference(versionId: reference.versionId, b: book, c: c, v: 1)
             let data = await BibleVersionCache.chapter(reference: chapterRef)
             if data == nil {
                 return []
@@ -46,7 +46,7 @@ struct BibleVersionRendering {
             c += 1
         }
         return textBlocks(
-            ref,
+            reference,
             renderVerseNumbers: renderVerseNumbers,
             renderHeadlines: renderHeadlines,
             renderFootnotes: renderFootnotes,
@@ -58,7 +58,7 @@ struct BibleVersionRendering {
     }
     
     static func textBlocks(
-        _ ref: BibleReference,
+        _ reference: BibleReference,
         renderVerseNumbers: Bool = true,
         renderHeadlines: Bool = true,
         renderFootnotes: Bool = false,
@@ -67,20 +67,20 @@ struct BibleVersionRendering {
         fonts: BibleTextFonts,
         uiFonts: BibleTextUIFonts
     ) -> [BibleTextBlock] {
-        guard let book = ref.book else {
+        guard let book = reference.book else {
             return []
         }
         var ret: [BibleTextBlock] = []
-        var c = ref.c
-        var v = ref.v
-        var v2 = ref.v2
-        while c <= ref.c2 {
-            if c == ref.c2 && ref.v2 > 0 {
-                v2 = ref.v2
+        var c = reference.c
+        var v = reference.v
+        var v2 = reference.v2
+        while c <= reference.c2 {
+            if c == reference.c2 && reference.v2 > 0 {
+                v2 = reference.v2
             } else {
                 v2 = 999
             }
-            let chapterRef = BibleReference(versionId: ref.versionId, b: book, c: c, v: 1)
+            let chapterRef = BibleReference(versionId: reference.versionId, b: book, c: c, v: 1)
             if let data = BibleVersionCache.chapterFromCache(reference: chapterRef) {
                 let doubleFonts = DoubleBibleTextFonts(one: uiFonts, two: fonts)
                 let marker = footnoteMarker
@@ -104,7 +104,7 @@ struct BibleVersionRendering {
                     currentFont: DoubleFont(one: stateIn.fonts.one.textFont, two: stateIn.fonts.two.textFont)
                 )
                 var stateUp = StateUp(
-                    rendering: (c == ref.c && ref.v <= 1),
+                    rendering: (c == reference.c && reference.v <= 1),
                     lineIsEmpty: true,
                     firstLineHeadIndent: 0,
                     headIndent: 0,

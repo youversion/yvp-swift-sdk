@@ -12,14 +12,14 @@ enum BibleVersionAPIs {
     // MARK: - Version Metadata
 
     /// Fetches version metadata from the server
-    static func metadata(code: Int) async throws -> Data {
+    static func metadata(versionId: Int) async throws -> Data {
         guard let appKey = YouVersionPlatformConfiguration.appKey else {
             preconditionFailure("YouVersionPlatformConfiguration.appKey must be set.")
         }
 
         let host = YouVersionPlatformConfiguration.apiHost
         let env = YouVersionPlatformConfiguration.hostEnv ?? ""
-        let url = URL(string: "https://\(host)/bible/version?version=\(code)\(env)")!
+        let url = URL(string: "https://\(host)/bible/version?version=\(versionId)\(env)")!
         var request = URLRequest(url: url)
         request.setValue(appKey, forHTTPHeaderField: "apikey")
 
@@ -56,10 +56,9 @@ enum BibleVersionAPIs {
             throw BibleVersionAPIError.invalidDownload
         }
 
-        let code = ref.versionCode
         let host = YouVersionPlatformConfiguration.apiHost
         let env = YouVersionPlatformConfiguration.hostEnv ?? ""
-        let url = URL(string: "https://\(host)/bible/chapter?version=\(code)&usfm=\(chap)\(env)")!
+        let url = URL(string: "https://\(host)/bible/chapter?version=\(ref.versionId)&usfm=\(chap)\(env)")!
 
         var request = URLRequest(url: url)
         request.setValue(appKey, forHTTPHeaderField: "apikey")

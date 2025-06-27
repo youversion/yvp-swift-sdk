@@ -38,7 +38,7 @@ struct BibleVersionRendering {
         }
         var c = ref.c
         while c <= ref.c2 {
-            let chapterRef = BibleReference(versionCode: ref.versionCode, b: book, c: c, v: 1)
+            let chapterRef = BibleReference(versionId: ref.versionId, b: book, c: c, v: 1)
             let data = await BibleVersionCache.chapter(reference: chapterRef)
             if data == nil {
                 return []
@@ -80,7 +80,7 @@ struct BibleVersionRendering {
             } else {
                 v2 = 999
             }
-            let chapterRef = BibleReference(versionCode: ref.versionCode, b: book, c: c, v: 1)
+            let chapterRef = BibleReference(versionId: ref.versionId, b: book, c: c, v: 1)
             if let data = BibleVersionCache.chapterFromCache(reference: chapterRef) {
                 let doubleFonts = DoubleBibleTextFonts(one: uiFonts, two: fonts)
                 let marker = footnoteMarker

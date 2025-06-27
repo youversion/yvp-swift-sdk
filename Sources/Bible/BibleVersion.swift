@@ -3,14 +3,14 @@ import Foundation
 @MainActor
 public class BibleVersion: ObservableObject {
     @Published public var isReady = false  // true when the metadata is cached
-    public let code: Int  // version code, e.g. 111 for NIV
+    public let id: Int  // version identifier, e.g. 111 for NIV
 
     private var metadata: BibleVersionData?
 
     // MARK: - Init and loading
-    public init(_ code: Int) {
-        self.code = code
-        if let m = BibleVersionCache.metadataIfCached(code: code) {
+    public init(_ id: Int) {
+        self.id = id
+        if let m = BibleVersionCache.metadataIfCached(versionId: id) {
             self.metadata = m
             self.isReady = true
         }
@@ -29,12 +29,12 @@ public class BibleVersion: ObservableObject {
 
     private func loadMetadataIfNeeded() async {
         if metadata == nil {
-            metadata = BibleVersionCache.metadataIfCached(code: code)
+            metadata = BibleVersionCache.metadataIfCached(versionId: id)
         }
         
         if metadata == nil {
             do {
-                metadata = try await BibleVersionCache.metadataFromServer(code: code)
+                metadata = try await BibleVersionCache.metadataFromServer(versionId: id)
             } catch {
                 print("error getting metadata: \(error.localizedDescription)")
             }
@@ -64,17 +64,17 @@ public class BibleVersion: ObservableObject {
     }
 
     // Example: "https://www.bible.com/bible/111/1SA.3.10.NIV"
-    public func makeShareUrl(ref: BibleReference) -> URL? {
-        let prefix = "https://www.bible.com/bible/\(self.code)/"
+    public func shareUrl(ref: BibleReference) -> URL? {
+        let prefix = "https://www.bible.com/bible/\(self.id)/"
         var urlString = ""
 
         guard let book = ref.book else {
             return nil
         }
         if ref.isRange {
-            urlString = "\(prefix)\(book).\(ref.c).\(ref.v)-\(ref.v2).\(self.abbreviation ?? String(self.code))"
+            urlString = "\(prefix)\(book).\(ref.c).\(ref.v)-\(ref.v2).\(abbreviation ?? String(id))"
         } else {
-            urlString = "\(prefix)\(book).\(ref.c).\(ref.v).\(self.abbreviation ?? String(self.code))"
+            urlString = "\(prefix)\(book).\(ref.c).\(ref.v).\(abbreviation ?? String(id))"
         }
 
         return URL(string: urlString)
@@ -114,7 +114,7 @@ public class BibleVersion: ObservableObject {
         let bcPart3: String
         var csep = ":"
 
-        if chapsInBook(b) == 1 {
+        if numberOfChaptersInBook(b) == 1 {
             csep = " "
             bcPart2 = ""
             bcPart3 = ""
@@ -223,14 +223,14 @@ public class BibleVersion: ObservableObject {
         } else {
             further = y
         }
-        return BibleReference(versionCode: x.versionCode, b: x.book!, c: x.c, v: x.v, c2: further.c2, v2: further.v2)
+        return BibleReference(versionId: x.versionId, b: x.book!, c: x.c, v: x.v, c2: further.c2, v2: further.v2)
     }
 
     // MARK: - Simple Accessors
 
     /// e.g. "KJV". Meant to be user-visible.
     public var abbreviation: String? {
-        if let versionData = BibleVersionCache.metadataIfCached(code: code),
+        if let versionData = BibleVersionCache.metadataIfCached(versionId: id),
            let abbreviation = versionData.local_abbreviation {
             return abbreviation
         }
@@ -238,7 +238,7 @@ public class BibleVersion: ObservableObject {
     }
 
     public var copyrightLong: String? {
-        if let versionData = BibleVersionCache.metadataIfCached(code: code),
+        if let versionData = BibleVersionCache.metadataIfCached(versionId: id),
            let str = versionData.copyright_long {
             return str.text
         }
@@ -246,7 +246,7 @@ public class BibleVersion: ObservableObject {
     }
 
     public var copyrightShort: String? {
-        if let versionData = BibleVersionCache.metadataIfCached(code: code),
+        if let versionData = BibleVersionCache.metadataIfCached(versionId: id),
            let str = versionData.copyright_short {
             return str.text
         }
@@ -268,7 +268,7 @@ public class BibleVersion: ObservableObject {
     }
 
     /// If metadata hasn't yet been loaded, or if the book code is bad, this will return 0.
-    public func chapsInBook(_ bookCode: String?) -> Int {
+    public func numberOfChaptersInBook(_ bookCode: String?) -> Int {
         guard let metadata, let bookCode else {
             return 0
         }

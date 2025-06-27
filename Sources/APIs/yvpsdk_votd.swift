@@ -21,8 +21,10 @@ public struct YouVersionVerseOfTheDay: Codable, Sendable {
     }
 }
 
-public func fetchVerseOfTheDay(lat: String,
-                               versionCode: Int = 1) async throws -> YouVersionVerseOfTheDay {
+public func verseOfTheDay(
+    versionId: Int = 1,
+    lat: String
+) async throws -> YouVersionVerseOfTheDay {
     guard let appKey = YouVersionPlatformConfiguration.appKey else {
         preconditionFailure("YouVersionPlatformConfiguration.appKey must be set.")
     }
@@ -31,7 +33,7 @@ public func fetchVerseOfTheDay(lat: String,
         return YouVersionVerseOfTheDay.preview
     }
 
-    guard let url = URLBuilder.votdURL(versionId: versionCode, accessToken: lat) else {
+    guard let url = URLBuilder.votdURL(versionId: versionId, accessToken: lat) else {
         throw URLError(.badURL)
     }
 

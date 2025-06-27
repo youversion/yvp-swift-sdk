@@ -1,4 +1,4 @@
-name: Swift Package Tests
+name: Unit Tests
 
 on: [pull_request]
 
@@ -14,11 +14,7 @@ jobs:
           swift --version
           xcodebuild -version
 
-      # Build the Swift package
-      - name: Build
-        run: swift build
-
-      # Run unit tests
+      # Build and run unit tests
       - name: Run tests
         run: xcodebuild -scheme YouVersionPlatform-Package \
                -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.4' \

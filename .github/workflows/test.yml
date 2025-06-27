@@ -9,10 +9,10 @@ jobs:
       # Check out the repository
       - uses: actions/checkout@v4
 
-      # Set up the Swift environment
-      - uses: swift-actions/setup-swift
-        with:
-          swift-version: "5.9" # Specify the Swift version you want to use
+      - name: Display Swift and Xcode versions
+        run: |
+          swift --version
+          xcodebuild -version
 
       # Build the Swift package
       - name: Build

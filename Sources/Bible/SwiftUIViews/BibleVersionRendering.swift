@@ -586,8 +586,8 @@ struct BibleVersionRendering {
         var footnotes: [DoubleAttributedString] = []
 
         mutating func append(_ newText: DoubleAttributedString) {
-            verseOffsets.append(self.text.one.length)
-            verseOffsets.append(self.verse)
+            verseOffsets.append(text.one.length)
+            verseOffsets.append(verse)
             if !newText.isEmpty {
                 text += newText
                 lineIsEmpty = false

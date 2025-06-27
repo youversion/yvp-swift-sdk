@@ -52,10 +52,10 @@ public struct BibleReference: Comparable, Codable, Hashable {
     }
 
     public var toUSFMOfChapter: String? {
-        guard let b = self.book else {
+        guard let book else {
             return nil
         }
-        return "\(b.uppercased()).\(self.c)"
+        return "\(book.uppercased()).\(c)"
     }
     
 }

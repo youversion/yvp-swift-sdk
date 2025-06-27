@@ -91,7 +91,7 @@ public struct BibleTextView: View {
     private func renderView(for block: BibleTextBlock) -> some View {
         Group {
             if block.rows.isEmpty {
-                let theView = self.emitTextBlock(self.addHighlight(block))
+                let theView = emitTextBlock(addHighlight(block))
                 if block.alignment == .leading {
                     theView
                 } else {
@@ -104,7 +104,7 @@ public struct BibleTextView: View {
                     }
                 }
             } else {
-                self.emitTableRows(block.rows)
+                emitTableRows(block.rows)
             }
         }
     }

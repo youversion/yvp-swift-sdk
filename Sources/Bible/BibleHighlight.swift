@@ -6,6 +6,13 @@ public struct BibleHighlight: CustomDebugStringConvertible, Sendable {
     public let verse: Int
     public let color: String  // a hex value, e.g. "#FF00FF"
 
+    public init(versionId: Int, chapter: Int, verse: Int, color: String) {
+        self.versionId = versionId
+        self.chapter = chapter
+        self.verse = verse
+        self.color = color
+    }
+
     public var debugDescription: String {
         "\(chapter):\(verse) (\(versionId)): \(color)"
     }

@@ -83,8 +83,8 @@ public class BibleVersion: ObservableObject {
     // MARK: - Formatting
     public func formatWithVersion(_ reference: BibleReference) -> String {
         let base = format(reference)
-        if let abbreviation = metadata?.local_abbreviation ?? metadata?.abbreviation {
-            if metadata?.language?.text_direction == "rtl" {
+        if let abbreviation = metadata?.localizedAbbreviation ?? metadata?.abbreviation {
+            if metadata?.language?.textDirection == "rtl" {
                 return "\(abbreviation) \(base)"
             } else {
                 return "\(base) \(abbreviation)"
@@ -95,7 +95,7 @@ public class BibleVersion: ObservableObject {
 
     public func format(_ reference: BibleReference) -> String {
         var chunks = formatWorker(reference)
-        if metadata?.language?.text_direction == "rtl" {
+        if metadata?.language?.textDirection == "rtl" {
             chunks.reverse()
         }
         return chunks.joined()
@@ -231,7 +231,7 @@ public class BibleVersion: ObservableObject {
     /// e.g. "KJV". Meant to be user-visible.
     public var abbreviation: String? {
         if let versionData = BibleVersionCache.metadataIfCached(versionId: id),
-           let abbreviation = versionData.local_abbreviation {
+           let abbreviation = versionData.localizedAbbreviation {
             return abbreviation
         }
         return nil
@@ -239,7 +239,7 @@ public class BibleVersion: ObservableObject {
 
     public var copyrightLong: String? {
         if let versionData = BibleVersionCache.metadataIfCached(versionId: id),
-           let str = versionData.copyright_long {
+           let str = versionData.copyrightLong {
             return str.text
         }
         return nil
@@ -247,7 +247,7 @@ public class BibleVersion: ObservableObject {
 
     public var copyrightShort: String? {
         if let versionData = BibleVersionCache.metadataIfCached(versionId: id),
-           let str = versionData.copyright_short {
+           let str = versionData.copyrightShort {
             return str.text
         }
         return nil
@@ -262,7 +262,7 @@ public class BibleVersion: ObservableObject {
             return nil
         }
         for b in metadata.books where b.usfm == book {
-            return b.human ?? b.human_long
+            return b.human ?? b.humanLong
         }
         return nil
     }
@@ -274,7 +274,7 @@ public class BibleVersion: ObservableObject {
         }
         for b in metadata.books where b.usfm == bookCode {
             if let chapters = b.chapters {
-                return chapters.reduce(0) { $0 + (($1.canonical == true) ? 1 : 0) }
+                return chapters.reduce(0) { $0 + ($1.isCanonical == true ? 1 : 0) }
             }
         }
         return 0
@@ -289,7 +289,7 @@ public class BibleVersion: ObservableObject {
         }
         for b in metadata.books where b.usfm == bookCode {
             if let chapters = b.chapters {
-                return chapters.compactMap { ($0.canonical == true) ? $0.human : nil }
+                return chapters.compactMap { ($0.isCanonical == true) ? $0.human : nil }
             }
         }
         return []

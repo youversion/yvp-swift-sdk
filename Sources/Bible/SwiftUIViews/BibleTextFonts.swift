@@ -1,18 +1,18 @@
 import SwiftUI
 
 public struct BibleTextFonts {
-    var textFont: Font
-    var textFontItalic: Font
-    var verseNumFont: Font
-    var verseNumBaselineOffset: CGFloat
-    var verseNumOpacity: CGFloat
-    var smallCaps: Font
-    var header: Font
-    var headerItalic: Font
-    var header2: Font
-    var header3: Font
-    var header4: Font
-    var footnote: Font
+    let textFont: Font
+    let textFontItalic: Font
+    let verseNumFont: Font
+    let verseNumBaselineOffset: CGFloat
+    let verseNumOpacity: CGFloat
+    let smallCaps: Font
+    let header: Font
+    let headerItalic: Font
+    let header2: Font
+    let header3: Font
+    let header4: Font
+    let footnote: Font
 
     init(familyName: String, baseSize: CGFloat = UIFont.preferredFont(forTextStyle: .body).pointSize) {
         let baseFont = Font.custom(familyName, size: baseSize)

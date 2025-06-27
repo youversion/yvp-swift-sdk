@@ -1,0 +1,23 @@
+name: Unit Tests
+
+on: [pull_request]
+
+jobs:
+  test:
+    runs-on: macos-latest
+    steps:
+      # Check out the repository
+      - uses: actions/checkout@v4
+
+      - uses: SwiftyLab/setup-swift@latest
+        with:
+          swift-version: "6.0"
+      - name: Display Swift and Xcode versions
+        run: |
+          swift --version
+          xcodebuild -version
+
+      # Build and run unit tests
+      - name: Run tests
+        run: |
+          xcodebuild -scheme YouVersionPlatform -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.4' test

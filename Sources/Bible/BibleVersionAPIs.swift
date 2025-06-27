@@ -96,7 +96,7 @@ enum BibleVersionAPIs {
         }
 
         guard let languageTag, languageTag.count == 3 else {
-            print("Invalid language code: \(languageTag)")
+            print("Invalid language code: \(languageTag ?? "unknown")")
             return []
         }
         

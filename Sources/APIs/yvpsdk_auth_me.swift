@@ -41,7 +41,7 @@ public func userInfo(lat: String) async throws -> YouVersionUserInfo {
     }
     
     let (data, _) = try await URLSession.shared.data(from: url)
-    guard var decodedResponse = try? JSONDecoder().decode(YouVersionUserInfo.self, from: data) else {
+    guard let decodedResponse = try? JSONDecoder().decode(YouVersionUserInfo.self, from: data) else {
         throw URLError(.badServerResponse)
     }
     return decodedResponse

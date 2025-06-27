@@ -280,7 +280,7 @@ public struct BibleTextOptions {
                 lineSpacing: CGFloat? = nil,
                 paragraphSpacing: CGFloat? = nil,
                 textColor: Color? = nil,
-                wocColor: SwiftUICore.Color = Color(red: 1, green: 0x3d / 256, blue: 0x4d / 256),
+                wocColor: Color = Color(red: 1, green: 0x3d / 256, blue: 0x4d / 256),
                 footnoteMode: BibleTextFootnoteMode = .none,
                 footnoteMarker: DoubleAttributedString? = nil) {
         self.fontFamily = fontFamily

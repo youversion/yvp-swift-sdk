@@ -1,8 +1,8 @@
 import Foundation
 
 public struct BibleVersionOverview: Decodable, Sendable {
-    public var id: Int
-    public var title: String?
-    public var abbreviation: String?
-    public var language: String?  // iso_639_3
+    public let id: Int
+    public let title: String?
+    public let abbreviation: String?
+    public let language: String?  // iso_639_3
 }

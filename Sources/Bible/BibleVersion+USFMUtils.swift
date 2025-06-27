@@ -21,9 +21,9 @@ extension BibleVersion {
             return merged[0]
         }
 
-        if var ref = simpleUsfmParse(txt), let validBook = isValidUSFMBookName(ref.book ?? "") {
-            ref.book = validBook
-            return ref
+        if var reference = simpleUsfmParse(txt), let validBook = isValidUSFMBookName(reference.book ?? "") {
+            reference.book = validBook
+            return reference
         }
         // TODO: check that the chapter and verse numbers are valid for this version.
         return nil

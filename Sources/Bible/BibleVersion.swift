@@ -64,25 +64,25 @@ public class BibleVersion: ObservableObject {
     }
 
     // Example: "https://www.bible.com/bible/111/1SA.3.10.NIV"
-    public func shareUrl(ref: BibleReference) -> URL? {
-        let prefix = "https://www.bible.com/bible/\(self.id)/"
+    public func shareUrl(reference: BibleReference) -> URL? {
+        let prefix = "https://www.bible.com/bible/\(id)/"
         var urlString = ""
 
-        guard let book = ref.book else {
+        guard let book = reference.book else {
             return nil
         }
-        if ref.isRange {
-            urlString = "\(prefix)\(book).\(ref.c).\(ref.v)-\(ref.v2).\(abbreviation ?? String(id))"
+        if reference.isRange {
+            urlString = "\(prefix)\(book).\(reference.c).\(reference.v)-\(reference.v2).\(abbreviation ?? String(id))"
         } else {
-            urlString = "\(prefix)\(book).\(ref.c).\(ref.v).\(abbreviation ?? String(id))"
+            urlString = "\(prefix)\(book).\(reference.c).\(reference.v).\(abbreviation ?? String(id))"
         }
 
         return URL(string: urlString)
     }
 
     // MARK: - Formatting
-    public func formatWithVersion(_ ref: BibleReference) -> String {
-        let base = format(ref)
+    public func formatWithVersion(_ reference: BibleReference) -> String {
+        let base = format(reference)
         if let abbreviation = metadata?.local_abbreviation ?? metadata?.abbreviation {
             if metadata?.language?.text_direction == "rtl" {
                 return "\(abbreviation) \(base)"
@@ -93,21 +93,21 @@ public class BibleVersion: ObservableObject {
         return base
     }
 
-    public func format(_ ref: BibleReference) -> String {
-        var chunks = formatWorker(ref)
+    public func format(_ reference: BibleReference) -> String {
+        var chunks = formatWorker(reference)
         if metadata?.language?.text_direction == "rtl" {
             chunks.reverse()
         }
         return chunks.joined()
     }
 
-    private func formatWorker(_ ref: BibleReference) -> [String] {
+    private func formatWorker(_ reference: BibleReference) -> [String] {
         // for convenience:
-        let b = ref.book
-        let c = ref.c
-        let v = ref.v
-        let c2 = ref.c2
-        let v2 = ref.v2
+        let b = reference.book
+        let c = reference.c
+        let v = reference.v
+        let c2 = reference.c2
+        let v2 = reference.v2
 
         let bcPart1 = bookName(b) ?? ""
         let bcPart2: String
@@ -142,7 +142,7 @@ public class BibleVersion: ObservableObject {
             if v2 == 999 {
                 return [bcPart1, bcPart2, bcPart3, csep, String(v), "-"]
             }
-            if ref.isRange {
+            if reference.isRange {
                 return [bcPart1, bcPart2, bcPart3, csep, String(v), "-", String(v2)]
             }
             if v != 0 {

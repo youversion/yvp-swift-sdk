@@ -47,18 +47,18 @@ enum BibleVersionAPIs {
     public typealias YVDOMContent = Youversion_Red_Biblecontent_Api_Model_Youversion_ApiContent
 
     /// Fetches a single chapter's content from the server
-    static func chapter(ref: BibleReference) async throws -> YVDOMContent {
+    static func chapter(reference: BibleReference) async throws -> YVDOMContent {
         guard let appKey = YouVersionPlatformConfiguration.appKey else {
             preconditionFailure("YouVersionPlatformConfiguration.appKey must be set.")
         }
 
-        guard let chap = ref.toUSFMOfChapter else {
+        guard let chap = reference.toUSFMOfChapter else {
             throw BibleVersionAPIError.invalidDownload
         }
 
         let host = YouVersionPlatformConfiguration.apiHost
         let env = YouVersionPlatformConfiguration.hostEnv ?? ""
-        let url = URL(string: "https://\(host)/bible/chapter?version=\(ref.versionId)&usfm=\(chap)\(env)")!
+        let url = URL(string: "https://\(host)/bible/chapter?version=\(reference.versionId)&usfm=\(chap)\(env)")!
 
         var request = URLRequest(url: url)
         request.setValue(appKey, forHTTPHeaderField: "apikey")

@@ -11,17 +11,7 @@ public func fetchHighlightsForChapter(lat: String,
         preconditionFailure("YouVersionPlatformConfiguration.appKey must be set.")
     }
 
-    var components = URLComponents()
-    components.scheme = "https"
-    components.host = YouVersionPlatformConfiguration.apiHost
-    components.path = "/highlights/chapter"
-    components.queryItems = [
-        URLQueryItem(name: "lat", value: lat),
-        URLQueryItem(name: "version", value: String(version.code)),
-        URLQueryItem(name: "usfm", value: usfm),
-        URLQueryItem(name: "platform", value: "iOS")
-    ]
-    guard let url = components.url else {
+    guard let url = URLBuilder.highlightsURL(usfm: usfm, versionId: version.code, accessToken: lat) else {
         throw URLError(.badURL)
     }
 

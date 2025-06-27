@@ -10,15 +10,6 @@ public struct VotdView: View {
     public let dayNumber: Int? = 112
     var lineLimit: Int?  // do we want this?
     
-    public init(votdTitle: String, votdText: String, votdCopyright: String) {
-        self.votdTitle = votdTitle
-        self.votdText = votdText
-        self.votdCopyright = votdCopyright
-        self.backgroundUrl = nil
-        self.minHeight = nil
-        self.maxHeight = nil
-    }
-    
     public init(
         votdTitle: String,
         votdText: String,

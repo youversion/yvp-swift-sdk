@@ -122,7 +122,7 @@ private func loadUI(lat: String) {
             // handle the error
         }
         do {
-            let votd = try await YouVersionPlatform.verseOfTheDay(versionId: 1, lat: lat)
+            let votd = try await YouVersionPlatform.verseOfTheDay(versionId: 1)
             self.votdTitle = "\(votd.reference) (\(votd.translation))"
             self.votdText = votd.text
             self.votdCopyright = votd.copyright

@@ -19,8 +19,14 @@ public struct VotdView: View {
         self.maxHeight = nil
     }
     
-    public init(votdTitle: String, votdText: String, votdCopyright: String,
-                backgroundUrl: String? = nil, minHeight: CGFloat? = nil, maxHeight: CGFloat? = nil) {
+    public init(
+        votdTitle: String,
+        votdText: String,
+        votdCopyright: String,
+        backgroundUrl: String? = nil,
+        minHeight: CGFloat? = nil,
+        maxHeight: CGFloat? = nil
+    ) {
         self.votdTitle = votdTitle
         self.votdText = votdText
         self.votdCopyright = votdCopyright

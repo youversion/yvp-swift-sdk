@@ -54,4 +54,38 @@ public enum URLBuilder {
         ]
         return components.url
     }
+    
+    static func versionURL(versionId: Int) -> URL? {
+        var components = baseURLComponents
+        components.path = "/bible/version"
+        
+        let env = YouVersionPlatformConfiguration.hostEnv ?? ""
+        components.queryItems = [
+            URLQueryItem(name: "version", value: "\(versionId)\(env)")
+        ]
+        return components.url
+    }
+    
+    static func chapterURL(usfm: String, versionId: Int) -> URL? {
+        var components = baseURLComponents
+        components.path = "/bible/chapter"
+        
+        let env = YouVersionPlatformConfiguration.hostEnv ?? ""
+        components.queryItems = [
+            URLQueryItem(name: "version", value: "\(versionId)"),
+            URLQueryItem(name: "usfm", value: "\(usfm)\(env)")
+        ]
+        return components.url
+    }
+    
+    static func versionsURL(languageTag: String) -> URL? {
+        var components = baseURLComponents
+        components.path = "/bible/versions"
+        
+        let env = YouVersionPlatformConfiguration.hostEnv ?? ""
+        components.queryItems = [
+            URLQueryItem(name: "language", value: "\(languageTag)\(env)")
+        ]
+        return components.url
+    }
 }

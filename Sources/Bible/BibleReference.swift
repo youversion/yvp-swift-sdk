@@ -1,12 +1,12 @@
 import Foundation
 
 public struct BibleReference: Comparable, Codable, Hashable {
-    public var versionCode: Int = 0
+    public var versionCode = 0
     public var book: String?
-    public var c: Int = 0
-    public var c2: Int = 0
-    public var v: Int = 0
-    public var v2: Int = 0
+    public var c = 0
+    public var c2 = 0
+    public var v = 0
+    public var v2 = 0
 
     public init(versionCode: Int, b: String, c: Int, v: Int) {
         self.versionCode = versionCode
@@ -26,8 +26,8 @@ public struct BibleReference: Comparable, Codable, Hashable {
         self.v2 = v2
     }
     
-    public func isRange() -> Bool {
-        return c != c2 || v != v2
+    public var isRange: Bool {
+        c != c2 || v != v2
     }
     
     public static func compare(a: BibleReference, b: BibleReference) -> Int {
@@ -48,7 +48,7 @@ public struct BibleReference: Comparable, Codable, Hashable {
     }
     
     public static func < (lhs: BibleReference, rhs: BibleReference) -> Bool {
-        return compare(a: lhs, b: rhs) < 0
+        compare(a: lhs, b: rhs) < 0
     }
 
     public var toUSFMOfChapter: String? {

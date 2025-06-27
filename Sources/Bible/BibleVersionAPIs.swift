@@ -8,11 +8,11 @@ enum BibleVersionAPIError: Error {
     case invalidResponse
 }
 
-struct BibleVersionAPIs {
+enum BibleVersionAPIs {
     // MARK: - Version Metadata
 
     /// Fetches version metadata from the server
-    static func fetchMetadata(code: Int) async throws -> Data {
+    static func metadata(code: Int) async throws -> Data {
         guard let appKey = YouVersionPlatformConfiguration.appKey else {
             preconditionFailure("YouVersionPlatformConfiguration.appKey must be set.")
         }
@@ -47,7 +47,7 @@ struct BibleVersionAPIs {
     public typealias YVDOMContent = Youversion_Red_Biblecontent_Api_Model_Youversion_ApiContent
 
     /// Fetches a single chapter's content from the server
-    static func fetchChapter(ref: BibleReference) async throws -> YVDOMContent {
+    static func chapter(ref: BibleReference) async throws -> YVDOMContent {
         guard let appKey = YouVersionPlatformConfiguration.appKey else {
             preconditionFailure("YouVersionPlatformConfiguration.appKey must be set.")
         }
@@ -95,7 +95,7 @@ struct BibleVersionAPIs {
             preconditionFailure("YouVersionPlatformConfiguration.appKey must be set.")
         }
 
-        if let lang = lang, lang.count != 3 {
+        if let lang, lang.count != 3 {
             print("Invalid language code: \(lang)")
             return []
         }
@@ -129,10 +129,8 @@ struct BibleVersionAPIs {
         return responseObject.versions
     }
 
-    // MARK: - internal structs
-
     private struct BibleVersionOverviewsResponse: Decodable {
-        var versions: [BibleVersionOverview]
+        let versions: [BibleVersionOverview]
     }
 
 }

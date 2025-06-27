@@ -20,15 +20,15 @@ public struct BibleTextUIFonts {
         let largest = UIFont(name: familyName, size: baseSize * 1.4)! // ?? UIFont.systemFont(ofSize: baseSize * 1.4)
         
         textFont = baseFont
-        textFontItalic = baseFont.withTraits(traits: .traitItalic)
+        textFontItalic = baseFont.withTraits(.traitItalic)
         verseNumFont = UIFont(name: familyName, size: baseSize * 0.7)!.withSmallCaps
             //.map { $0.withSmallCaps }
             //?? UIFont.systemFont(ofSize: baseSize * 0.7).withSmallCaps
         verseNumBaselineOffset = baseSize * 0.2
         smallCaps = baseFont.withSmallCaps
-        header = largest.withTraits(traits: .traitItalic)
-        headerItalic = larger.withTraits(traits: .traitItalic)
-        header2 = larger.withTraits(traits: .traitBold)
+        header = largest.withTraits(.traitItalic)
+        headerItalic = larger.withTraits(.traitItalic)
+        header2 = larger.withTraits(.traitBold)
         header3 = larger
         header4 = larger
         footnote = UIFont(name: familyName, size: baseSize * 0.8)! // ?? UIFont.systemFont(ofSize: baseSize * 0.8)
@@ -36,7 +36,7 @@ public struct BibleTextUIFonts {
 }
 
 private extension UIFont {
-    func withTraits(traits: UIFontDescriptor.SymbolicTraits) -> UIFont {
+    func withTraits(_ traits: UIFontDescriptor.SymbolicTraits) -> UIFont {
         guard let descriptor = fontDescriptor.withSymbolicTraits(traits) else {
             return self
         }

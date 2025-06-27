@@ -31,7 +31,7 @@ public struct YouVersionUserInfo: Codable, Sendable {
     }
 }
 
-public func fetchUserInfo(lat: String) async throws -> YouVersionUserInfo {
+public func userInfo(lat: String) async throws -> YouVersionUserInfo {
     if lat == "preview" {
         return YouVersionUserInfo.preview
     }

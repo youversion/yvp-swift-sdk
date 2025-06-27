@@ -15,7 +15,7 @@ public enum URLBuilder {
         components.queryItems = [
             URLQueryItem(name: "lat", value: accessToken),
             URLQueryItem(name: "version", value: String(versionId)),
-            URLQueryItem(name: "usfm", value: usfm),
+            URLQueryItem(name: "usfm", value: usfm)
         ]
         return components.url
     }
@@ -29,9 +29,11 @@ public enum URLBuilder {
         return components.url
     }
     
-    static func authURL(appKey: String,
-                         requiredPermissions: Set<YVPPermission> = [],
-                         optionalPermissions: Set<YVPPermission> = []) -> URL? {
+    static func authURL(
+        appKey: String,
+        requiredPermissions: Set<YVPPermission> = [],
+        optionalPermissions: Set<YVPPermission> = []
+    ) -> URL? {
         var components = baseURLComponents
         components.path = "/auth/login"
         components.queryItems = [
@@ -48,7 +50,7 @@ public enum URLBuilder {
         components.path = "/votd/today"
         components.queryItems = [
             URLQueryItem(name: "lat", value: accessToken),
-            URLQueryItem(name: "translationId", value: String(versionId)),
+            URLQueryItem(name: "translationId", value: String(versionId))
         ]
         return components.url
     }

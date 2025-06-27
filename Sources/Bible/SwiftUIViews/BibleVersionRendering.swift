@@ -6,12 +6,14 @@ struct BibleVersionRendering {
         // the fonts aren't used in this case, but are required.
         let familyName = "Times New Roman"
         let uiFonts = BibleTextUIFonts(familyName: familyName)
-        let blocks = textBlocks(ref,
-                                renderVerseNumbers: false,
-                                renderHeadlines: false,
-                                renderFootnotes: false,
-                                fonts: BibleTextFonts(familyName: familyName),
-                                uiFonts: uiFonts)
+        let blocks = textBlocks(
+            ref,
+            renderVerseNumbers: false,
+            renderHeadlines: false,
+            renderFootnotes: false,
+            fonts: BibleTextFonts(familyName: familyName),
+            uiFonts: uiFonts
+        )
 
         return blocks.map { String($0.text.characters) }.joined(separator: "\n")
     }
@@ -19,14 +21,16 @@ struct BibleVersionRendering {
     // If not all chapters are available, this returns an empty array.
     // Marked as @MainActor due to NSMutableAttributedStrings in BibleTextBlocks.
     @MainActor
-    static func textBlocksAsync(_ ref: BibleReference,
-                                renderVerseNumbers: Bool = true,
-                                renderHeadlines: Bool = true,
-                                renderFootnotes: Bool = false,
-                                footnoteMarker: DoubleAttributedString? = nil,
-                                wocColor: Color = Color.red,
-                                fonts: BibleTextFonts,
-                                uiFonts: BibleTextUIFonts) async -> [BibleTextBlock] {
+    static func textBlocksAsync(
+        _ ref: BibleReference,
+        renderVerseNumbers: Bool = true,
+        renderHeadlines: Bool = true,
+        renderFootnotes: Bool = false,
+        footnoteMarker: DoubleAttributedString? = nil,
+        wocColor: Color = Color.red,
+        fonts: BibleTextFonts,
+        uiFonts: BibleTextUIFonts
+    ) async -> [BibleTextBlock] {
         // The normal textBlocks() is sync, so it won't fetch from the server.
         // So, ensure that every chapter needed is available. This warms the cache up!
         guard let book = ref.book else {
@@ -35,30 +39,34 @@ struct BibleVersionRendering {
         var c = ref.c
         while c <= ref.c2 {
             let chapterRef = BibleReference(versionCode: ref.versionCode, b: book, c: c, v: 1)
-            let data = await BibleVersionCache.getChapterAsync(ref: chapterRef)
+            let data = await BibleVersionCache.chapter(reference: chapterRef)
             if data == nil {
                 return []
             }
             c += 1
         }
-        return textBlocks(ref,
-                          renderVerseNumbers: renderVerseNumbers,
-                          renderHeadlines: renderHeadlines,
-                          renderFootnotes: renderFootnotes,
-                          footnoteMarker: footnoteMarker,
-                          wocColor: wocColor,
-                          fonts: fonts,
-                          uiFonts: uiFonts)
+        return textBlocks(
+            ref,
+            renderVerseNumbers: renderVerseNumbers,
+            renderHeadlines: renderHeadlines,
+            renderFootnotes: renderFootnotes,
+            footnoteMarker: footnoteMarker,
+            wocColor: wocColor,
+            fonts: fonts,
+            uiFonts: uiFonts
+        )
     }
-
-    static func textBlocks(_ ref: BibleReference,
-                           renderVerseNumbers: Bool = true,
-                           renderHeadlines: Bool = true,
-                           renderFootnotes: Bool = false,
-                           footnoteMarker: DoubleAttributedString? = nil,
-                           wocColor: Color = Color.red,
-                           fonts: BibleTextFonts,
-                           uiFonts: BibleTextUIFonts) -> [BibleTextBlock] {
+    
+    static func textBlocks(
+        _ ref: BibleReference,
+        renderVerseNumbers: Bool = true,
+        renderHeadlines: Bool = true,
+        renderFootnotes: Bool = false,
+        footnoteMarker: DoubleAttributedString? = nil,
+        wocColor: Color = Color.red,
+        fonts: BibleTextFonts,
+        uiFonts: BibleTextUIFonts
+    ) -> [BibleTextBlock] {
         guard let book = ref.book else {
             return []
         }
@@ -73,7 +81,7 @@ struct BibleVersionRendering {
                 v2 = 999
             }
             let chapterRef = BibleReference(versionCode: ref.versionCode, b: book, c: c, v: 1)
-            if let data = BibleVersionCache.getChapterIfCached(ref: chapterRef) {
+            if let data = BibleVersionCache.chapterFromCache(reference: chapterRef) {
                 let doubleFonts = DoubleBibleTextFonts(one: uiFonts, two: fonts)
                 let marker = footnoteMarker
                 if marker != nil {
@@ -87,23 +95,28 @@ struct BibleVersionRendering {
                     renderFootnotes: renderFootnotes,
                     footnoteMarker: marker,
                     wocColor: wocColor,
-                    fonts: doubleFonts)
+                    fonts: doubleFonts
+                )
                 let stateDown = StateDown(
                     woc: false,
                     smallcaps: false,
                     alignment: .leading,
-                    currentFont: DoubleFont(one: stateIn.fonts.one.textFont, two: stateIn.fonts.two.textFont))
+                    currentFont: DoubleFont(one: stateIn.fonts.one.textFont, two: stateIn.fonts.two.textFont)
+                )
                 var stateUp = StateUp(
                     rendering: (c == ref.c && ref.v <= 1),
                     lineIsEmpty: true,
                     firstLineHeadIndent: 0,
                     headIndent: 0,
                     chapter: c,
-                    verse: 0)
-
-                handleNodeBlock(node: data.root,
-                                stateIn: stateIn, stateDown: stateDown, stateUp: &stateUp,
-                                ret: &ret)
+                    verse: 0
+                )
+                
+                handleNodeBlock(
+                    node: data.root,
+                    stateIn: stateIn, stateDown: stateDown, stateUp: &stateUp,
+                    ret: &ret
+                )
             }
             c += 1
             v = 0
@@ -111,9 +124,12 @@ struct BibleVersionRendering {
         return ret
     }
 
-    private static func handleBlockKid(_ node: Youversion_Red_Biblecontent_Api_Model_Youversion_ApiNode,
-                                       stateIn: StateIn, stateDown parentStateDown: StateDown, stateUp: inout StateUp) {
-
+    private static func handleBlockKid(
+        _ node: Youversion_Red_Biblecontent_Api_Model_Youversion_ApiNode,
+        stateIn: StateIn,
+        stateDown parentStateDown: StateDown,
+        stateUp: inout StateUp
+    ) {
         var stateDown = parentStateDown
         if node.type != .span && node.type != .text {
             assertionFailed("handleBlockKid: unexpected:", type: node.type)
@@ -165,10 +181,12 @@ struct BibleVersionRendering {
         }
     }
 
-    private static func handleFootnoteNode(_ node: Youversion_Red_Biblecontent_Api_Model_Youversion_ApiNode,
-                                           stateIn: StateIn,
-                                           stateDown parentStateDown: StateDown,
-                                           stateUp: inout StateUp) {
+    private static func handleFootnoteNode(
+        _ node: Youversion_Red_Biblecontent_Api_Model_Youversion_ApiNode,
+        stateIn: StateIn,
+        stateDown parentStateDown: StateDown,
+        stateUp: inout StateUp
+    ) {
         var stateDown = parentStateDown
         if let marker = stateIn.footnoteMarker {
             stateUp.append(marker)
@@ -189,8 +207,12 @@ struct BibleVersionRendering {
         stateUp.lineIsEmpty = false  // TODO: this line has existed for a while. Should it?
     }
 
-    private static func handleNodeCell(node: Youversion_Red_Biblecontent_Api_Model_Youversion_ApiNode,
-                                       stateIn: StateIn, stateDown parentStateDown: StateDown, stateUp: inout StateUp) {
+    private static func handleNodeCell(
+        node: Youversion_Red_Biblecontent_Api_Model_Youversion_ApiNode,
+        stateIn: StateIn,
+        stateDown parentStateDown: StateDown,
+        stateUp: inout StateUp
+    ) {
         var stateDown = parentStateDown
         for kid in node.children {
             if kid.type == .span || kid.type == .text {
@@ -203,10 +225,12 @@ struct BibleVersionRendering {
         }
     }
 
-    private static func handleNodeRow(node: Youversion_Red_Biblecontent_Api_Model_Youversion_ApiNode,
-                                      stateIn: StateIn,
-                                      stateDown parentStateDown: StateDown,
-                                      stateUp: inout StateUp) -> [DoubleAttributedString] {
+    private static func handleNodeRow(
+        node: Youversion_Red_Biblecontent_Api_Model_Youversion_ApiNode,
+        stateIn: StateIn,
+        stateDown parentStateDown: StateDown,
+        stateUp: inout StateUp
+    ) -> [DoubleAttributedString] {
         let stateDown = parentStateDown
         var thisRow: [DoubleAttributedString] = []
         for kid in node.children {
@@ -224,11 +248,13 @@ struct BibleVersionRendering {
         return thisRow
     }
 
-    private static func handleNodeTable(node: Youversion_Red_Biblecontent_Api_Model_Youversion_ApiNode,
-                                        stateIn: StateIn,
-                                        stateDown parentStateDown: StateDown,
-                                        stateUp: inout StateUp,
-                                        ret: inout [BibleTextBlock]) {
+    private static func handleNodeTable(
+        node: Youversion_Red_Biblecontent_Api_Model_Youversion_ApiNode,
+        stateIn: StateIn,
+        stateDown parentStateDown: StateDown,
+        stateUp: inout StateUp,
+        ret: inout [BibleTextBlock]
+    ) {
         let stateDown = parentStateDown
         var rows: [[DoubleAttributedString]] = []
 
@@ -238,29 +264,35 @@ struct BibleVersionRendering {
         for kid in node.children {
             if kid.type == .row {
                 let row = handleNodeRow(node: kid, stateIn: stateIn, stateDown: stateDown, stateUp: &stateUp)
-                if row.count > 0 {
+                if !row.isEmpty {
                     rows.append(row)
                 }
             } else {
                 assertionFailed("unexpected child of table: ", type: kid.type)
             }
         }
-        if rows.count > 0 {
-            ret.append(BibleTextBlock(text: DoubleAttributedString(),
-                                      chapter: stateUp.chapter,
-                                      verseOffsets: stateUp.verseOffsets,
-                                      firstLineHeadIndent: 0, headIndent: 0, marginTop: 10,
-                                      alignment: .leading,
-                                      footnotes: stateUp.footnotes,
-                                      rows: rows))
+        if !rows.isEmpty {
+            ret.append(
+                BibleTextBlock(
+                    text: DoubleAttributedString(),
+                    chapter: stateUp.chapter,
+                    verseOffsets: stateUp.verseOffsets,
+                    firstLineHeadIndent: 0, headIndent: 0, marginTop: 10,
+                    alignment: .leading,
+                    footnotes: stateUp.footnotes,
+                    rows: rows
+                )
+            )
         }
     }
 
-    private static func handleNodeBlock(node: Youversion_Red_Biblecontent_Api_Model_Youversion_ApiNode,
-                                        stateIn: StateIn,
-                                        stateDown parentStateDown: StateDown,
-                                        stateUp: inout StateUp,
-                                        ret: inout [BibleTextBlock]) {
+    private static func handleNodeBlock(
+        node: Youversion_Red_Biblecontent_Api_Model_Youversion_ApiNode,
+        stateIn: StateIn,
+        stateDown parentStateDown: StateDown,
+        stateUp: inout StateUp,
+        ret: inout [BibleTextBlock]
+    ) {
         var stateDown = parentStateDown
         var marginTop: CGFloat = 0
         let fonts = stateIn.fonts
@@ -276,10 +308,12 @@ struct BibleVersionRendering {
             return
         }
 
-        interpretBlockClasses(node.classes,
-                              stateIn: stateIn,
-                              stateDown: &stateDown, stateUp: &stateUp,
-                              marginTop: &marginTop)
+        interpretBlockClasses(
+            node.classes,
+            stateIn: stateIn,
+            stateDown: &stateDown, stateUp: &stateUp,
+            marginTop: &marginTop
+        )
 
         for kid in node.children {
             // types: block, span, text. Table, row, cell.
@@ -320,26 +354,32 @@ struct BibleVersionRendering {
         }
     }
 
-    private static func createBlock(stateDown: StateDown,
-                                    stateUp: inout StateUp,
-                                    marginTop: CGFloat) -> BibleTextBlock {
-        let block = BibleTextBlock(text: stateUp.text,
-                                   chapter: stateUp.chapter,
-                                   verseOffsets: stateUp.verseOffsets,
-                                   firstLineHeadIndent: stateUp.firstLineHeadIndent,
-                                   headIndent: stateUp.headIndent,
-                                   marginTop: marginTop,
-                                   alignment: stateDown.alignment,
-                                   footnotes: stateUp.footnotes)
+    private static func createBlock(
+        stateDown: StateDown,
+        stateUp: inout StateUp,
+        marginTop: CGFloat
+    ) -> BibleTextBlock {
+        let block = BibleTextBlock(
+            text: stateUp.text,
+            chapter: stateUp.chapter,
+            verseOffsets: stateUp.verseOffsets,
+            firstLineHeadIndent: stateUp.firstLineHeadIndent,
+            headIndent: stateUp.headIndent,
+            marginTop: marginTop,
+            alignment: stateDown.alignment,
+            footnotes: stateUp.footnotes
+        )
         stateUp.footnotes.removeAll()
         return block
     }
 
-    private static func interpretBlockClasses(_ classes: [String],
-                                              stateIn: StateIn,
-                                              stateDown: inout StateDown,
-                                              stateUp: inout StateUp,
-                                              marginTop: inout CGFloat) {
+    private static func interpretBlockClasses(
+        _ classes: [String],
+        stateIn: StateIn,
+        stateDown: inout StateDown,
+        stateUp: inout StateUp,
+        marginTop: inout CGFloat
+    ) {
         let fonts = stateIn.fonts
         let indentStep = 1
         let ignoredTags = [  // things we don't currently care about:
@@ -449,10 +489,12 @@ struct BibleVersionRendering {
         }
     }
 
-    private static func interpretTextAttr(_ node: Youversion_Red_Biblecontent_Api_Model_Youversion_ApiNode,
-                                          stateIn: StateIn,
-                                          stateDown: inout StateDown,
-                                          stateUp: inout StateUp) {
+    private static func interpretTextAttr(
+        _ node: Youversion_Red_Biblecontent_Api_Model_Youversion_ApiNode,
+        stateIn: StateIn,
+        stateDown: inout StateDown,
+        stateUp: inout StateUp
+    ) {
         let fonts = stateIn.fonts
         // this is a weird place to do this, but the tag is on a block, and block classes don't usually change fonts, so...
         if stateDown.smallcaps {
@@ -494,9 +536,11 @@ struct BibleVersionRendering {
         return localCopy
     }
 
-    private static func assertionFailed(_ message: String,
-                                        string: String? = nil,
-                                        type: Youversion_Red_Biblecontent_Api_Model_Youversion_ApiNodeType? = nil) {
+    private static func assertionFailed(
+        _ message: String,
+        string: String? = nil,
+        type: Youversion_Red_Biblecontent_Api_Model_Youversion_ApiNodeType? = nil
+    ) {
 #if false
         // enable this for debugging/tracing this rendering code
         if let type {
@@ -573,7 +617,7 @@ public class DoubleAttributedString: Equatable, Hashable {
         two = AttributedString(string)
     }
 
-    static func + (lhs: DoubleAttributedString, rhs: DoubleAttributedString) -> DoubleAttributedString {
+    static func +(lhs: DoubleAttributedString, rhs: DoubleAttributedString) -> DoubleAttributedString { //swiftlint:disable:this operator_whitespace
         let result = DoubleAttributedString()
         result.one = NSMutableAttributedString(attributedString: lhs.one)
         result.one.append(rhs.one)
@@ -586,19 +630,19 @@ public class DoubleAttributedString: Equatable, Hashable {
     }
 
     public static func == (lhs: DoubleAttributedString, rhs: DoubleAttributedString) -> Bool {
-        return lhs.one.string == rhs.one.string
+        lhs.one.string == rhs.one.string
     }
 
     public func hash(into hasher: inout Hasher) {
-        return two.hash(into: &hasher)
+        two.hash(into: &hasher)
     }
 
     var characters: String {
-        return String(two.characters)
+        String(two.characters)
     }
 
     var isEmpty: Bool {
-        return two.characters.isEmpty
+        two.characters.isEmpty
     }
 
     @discardableResult

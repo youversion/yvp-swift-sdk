@@ -31,7 +31,7 @@ public func fetchHighlightsForChapter(lat: String,
         return []
     }
 
-    func convertHighlightResponse(response: BibleHighlightResponse, version: BibleVersion) -> BibleHighlight? {
+    func convertHighlightResponse(_ response: BibleHighlightResponse, version: BibleVersion) -> BibleHighlight? {
         guard let usfm = response.usfm, let ref = version.simpleUsfmParse(usfm) else {
             return nil
         }
@@ -46,7 +46,7 @@ public func fetchHighlightsForChapter(lat: String,
     guard let decodedResponse = try? JSONDecoder().decode(BibleHighlightsResponseList.self, from: data) else {
         throw URLError(.badServerResponse)
     }
-    return decodedResponse.highlights.compactMap { convertHighlightResponse(response: $0, version: version) }
+    return decodedResponse.highlights.compactMap { convertHighlightResponse($0, version: version) }
 }
 
 private struct BibleHighlightsResponseList: Codable {

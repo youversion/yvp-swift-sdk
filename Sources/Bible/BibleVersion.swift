@@ -16,7 +16,7 @@ public class BibleVersion: ObservableObject {
         }
     }
 
-    public func readied() -> BibleVersion {
+    public var readied: BibleVersion {
         if isReady {
             return self
         }
@@ -27,16 +27,16 @@ public class BibleVersion: ObservableObject {
         return self
     }
 
-    func loadMetadataIfNeeded() async {
-        if self.metadata == nil {
-            self.metadata = BibleVersionCache.metadataIfCached(code: code)
+    private func loadMetadataIfNeeded() async {
+        if metadata == nil {
+            metadata = BibleVersionCache.metadataIfCached(code: code)
         }
-        if self.metadata == nil {
+        
+        if metadata == nil {
             do {
-                self.metadata = try await BibleVersionCache.metadataFromServer(code: code)
+                metadata = try await BibleVersionCache.metadataFromServer(code: code)
             } catch {
                 print("error getting metadata: \(error.localizedDescription)")
-                return
             }
         }
     }
@@ -71,7 +71,7 @@ public class BibleVersion: ObservableObject {
         guard let book = ref.book else {
             return nil
         }
-        if ref.isRange() {
+        if ref.isRange {
             urlString = "\(prefix)\(book).\(ref.c).\(ref.v)-\(ref.v2).\(self.abbreviation ?? String(self.code))"
         } else {
             urlString = "\(prefix)\(book).\(ref.c).\(ref.v).\(self.abbreviation ?? String(self.code))"
@@ -142,7 +142,7 @@ public class BibleVersion: ObservableObject {
             if v2 == 999 {
                 return [bcPart1, bcPart2, bcPart3, csep, String(v), "-"]
             }
-            if ref.isRange() {
+            if ref.isRange {
                 return [bcPart1, bcPart2, bcPart3, csep, String(v), "-", String(v2)]
             }
             if v != 0 {
@@ -253,11 +253,8 @@ public class BibleVersion: ObservableObject {
         return nil
     }
 
-    public func bookCodes() -> [String] {
-        guard let metadata else {
-            return []
-        }
-        return metadata.books.compactMap { $0.usfm }
+    public var bookCodes: [String] {
+        metadata?.books.compactMap { $0.usfm } ?? []
     }
 
     public func bookName(_ book: String?) -> String? {

@@ -68,13 +68,13 @@ public class BibleVersion: ObservableObject {
         let prefix = "https://www.bible.com/bible/\(id)/"
         var urlString = ""
 
-        guard let book = reference.book else {
+        guard let book = reference.bookUSFM else {
             return nil
         }
         if reference.isRange {
-            urlString = "\(prefix)\(book).\(reference.c).\(reference.v)-\(reference.v2).\(abbreviation ?? String(id))"
+            urlString = "\(prefix)\(book).\(reference.chapterStart).\(reference.verseStart)-\(reference.verseEnd).\(abbreviation ?? String(id))"
         } else {
-            urlString = "\(prefix)\(book).\(reference.c).\(reference.v).\(abbreviation ?? String(id))"
+            urlString = "\(prefix)\(book).\(reference.chapterStart).\(reference.verseStart).\(abbreviation ?? String(id))"
         }
 
         return URL(string: urlString)
@@ -103,11 +103,11 @@ public class BibleVersion: ObservableObject {
 
     private func formatWorker(_ reference: BibleReference) -> [String] {
         // for convenience:
-        let b = reference.book
-        let c = reference.c
-        let v = reference.v
-        let c2 = reference.c2
-        let v2 = reference.v2
+        let b = reference.bookUSFM
+        let c = reference.chapterStart
+        let v = reference.verseStart
+        let c2 = reference.chapterEnd
+        let v2 = reference.verseEnd
 
         let bcPart1 = bookName(b) ?? ""
         let bcPart2: String
@@ -155,10 +155,10 @@ public class BibleVersion: ObservableObject {
     // MARK: - Operations
 
     private func isContiguousWith(_ first: BibleReference, other: BibleReference) -> Bool {
-        if first.book != other.book {
+        if first.bookUSFM != other.bookUSFM {
             return false
         }
-        if first.book == nil {
+        if first.bookUSFM == nil {
             return false
         }
         let a, b: BibleReference
@@ -174,13 +174,13 @@ public class BibleVersion: ObservableObject {
         // we can't do that without knowing the # of verses in the chapter in this version.
         // we don't have that info (well, not yet, not easily).
 
-        if a.c2 < b.c {
+        if a.chapterEnd < b.chapterStart {
             return false
         }
-        if a.c2 > b.c {
+        if a.chapterEnd > b.chapterStart {
             return true
         }
-        if (a.v2 + 1) < b.v {
+        if (a.verseEnd + 1) < b.verseStart {
             return false
         }
         return true
@@ -203,7 +203,7 @@ public class BibleVersion: ObservableObject {
 
     nonisolated private func fromOverlappingPair(a: BibleReference, b: BibleReference) -> BibleReference {
         let x, y: BibleReference
-        guard a.book == b.book, a.book != nil else {  // this shouldn't ever happen; fail in a reasonable way.
+        guard a.bookUSFM == b.bookUSFM, a.bookUSFM != nil else {  // this shouldn't ever happen; fail in a reasonable way.
             return a
         }
         if BibleReference.compare(a: a, b: b) > 0 {
@@ -214,16 +214,16 @@ public class BibleVersion: ObservableObject {
             y = b
         }
         var further: BibleReference
-        if x.c2 > y.c2 {
+        if x.chapterEnd > y.chapterEnd {
             further = x
-        } else if x.c2 < y.c2 {
+        } else if x.chapterEnd < y.chapterEnd {
             further = y
-        } else if x.v2 > y.v2 {
+        } else if x.verseEnd > y.verseEnd {
             further = x
         } else {
             further = y
         }
-        return BibleReference(versionId: x.versionId, b: x.book!, c: x.c, v: x.v, c2: further.c2, v2: further.v2)
+        return BibleReference(versionId: x.versionId, bookUSFM: x.bookUSFM!, chapterStart: x.chapterStart, verseStart: x.verseStart, chapterEnd: further.chapterEnd, verseEnd: further.verseEnd)
     }
 
     // MARK: - Simple Accessors

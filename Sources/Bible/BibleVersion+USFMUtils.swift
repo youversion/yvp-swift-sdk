@@ -21,8 +21,8 @@ extension BibleVersion {
             return merged[0]
         }
 
-        if var reference = simpleUsfmParse(txt), let validBook = isValidUSFMBookName(reference.book ?? "") {
-            reference.book = validBook
+        if var reference = simpleUsfmParse(txt), let validBook = isValidUSFMBookName(reference.bookUSFM ?? "") {
+            reference.bookUSFM = validBook
             return reference
         }
         // TODO: check that the chapter and verse numbers are valid for this version.
@@ -42,7 +42,7 @@ extension BibleVersion {
                 if (c == c2) && (v > v2) {
                     return nil
                 }
-                return BibleReference(versionId: id, b: String(bText), c: c, v: v, c2: c2, v2: v2)
+                return BibleReference(versionId: id, bookUSFM: String(bText), chapterStart: c, verseStart: v, chapterEnd: c2, verseEnd: v2)
             }
             return nil
         }
@@ -63,7 +63,7 @@ extension BibleVersion {
                 if (c == c2) && (v > v2) {
                     return nil
                 }
-                return BibleReference(versionId: id, b: String(bText), c: c, v: v, c2: c2, v2: v2)
+                return BibleReference(versionId: id, bookUSFM: String(bText), chapterStart: c, verseStart: v, chapterEnd: c2, verseEnd: v2)
             }
             return nil
         }
@@ -75,7 +75,7 @@ extension BibleVersion {
                 if v > v2 {
                     return nil
                 }
-                return BibleReference(versionId: id, b: String(bText), c: c, v: v, c2: c, v2: v2)
+                return BibleReference(versionId: id, bookUSFM: String(bText), chapterStart: c, verseStart: v, chapterEnd: c, verseEnd: v2)
             }
             return nil
         }
@@ -84,7 +84,7 @@ extension BibleVersion {
         if let match = text.wholeMatch(of: patBCV) {
             let (_, bText, cText, vText) = match.output
             if let c = Int(cText), let v = Int(vText) {
-                return BibleReference(versionId: id, b: String(bText), c: c, v: v)
+                return BibleReference(versionId: id, bookUSFM: String(bText), chapter: c, verse: v)
             }
             return nil
         }
@@ -93,7 +93,7 @@ extension BibleVersion {
         if let match = text.wholeMatch(of: patBC) {
             let (_, bText, cText) = match.output
             if let c = Int(cText) {
-                return BibleReference(versionId: id, b: String(bText), c: c, v: 0)
+                return BibleReference(versionId: id, bookUSFM: String(bText), chapter: c, verse: 0)
             }
             return nil
         }
@@ -105,7 +105,7 @@ extension BibleVersion {
                 if c > c2 {
                     return nil
                 }
-                return BibleReference(versionId: id, b: String(bText), c: c, v: 0, c2: c2, v2: 0)
+                return BibleReference(versionId: id, bookUSFM: String(bText), chapterStart: c, verseStart: 0, chapterEnd: c2, verseEnd: 0)
             }
             return nil
         }

@@ -33,12 +33,12 @@ struct BibleVersionRendering {
     ) async -> [BibleTextBlock] {
         // The normal textBlocks() is sync, so it won't fetch from the server.
         // So, ensure that every chapter needed is available. This warms the cache up!
-        guard let book = reference.book else {
+        guard let book = reference.bookUSFM else {
             return []
         }
-        var c = reference.c
-        while c <= reference.c2 {
-            let chapterRef = BibleReference(versionId: reference.versionId, b: book, c: c, v: 1)
+        var c = reference.chapterStart
+        while c <= reference.chapterEnd {
+            let chapterRef = BibleReference(versionId: reference.versionId, bookUSFM: book, chapter: c, verse: 1)
             let data = await BibleVersionCache.chapter(reference: chapterRef)
             if data == nil {
                 return []
@@ -67,20 +67,20 @@ struct BibleVersionRendering {
         fonts: BibleTextFonts,
         uiFonts: BibleTextUIFonts
     ) -> [BibleTextBlock] {
-        guard let book = reference.book else {
+        guard let book = reference.bookUSFM else {
             return []
         }
         var ret: [BibleTextBlock] = []
-        var c = reference.c
-        var v = reference.v
-        var v2 = reference.v2
-        while c <= reference.c2 {
-            if c == reference.c2 && reference.v2 > 0 {
-                v2 = reference.v2
+        var c = reference.chapterStart
+        var v = reference.verseStart
+        var v2 = reference.verseEnd
+        while c <= reference.chapterEnd {
+            if c == reference.chapterEnd && reference.verseEnd > 0 {
+                v2 = reference.verseEnd
             } else {
                 v2 = 999
             }
-            let chapterRef = BibleReference(versionId: reference.versionId, b: book, c: c, v: 1)
+            let chapterRef = BibleReference(versionId: reference.versionId, bookUSFM: book, chapter: c, verse: 1)
             if let data = BibleVersionCache.chapterFromCache(reference: chapterRef) {
                 let doubleFonts = DoubleBibleTextFonts(one: uiFonts, two: fonts)
                 let marker = footnoteMarker
@@ -104,7 +104,7 @@ struct BibleVersionRendering {
                     currentFont: DoubleFont(one: stateIn.fonts.one.textFont, two: stateIn.fonts.two.textFont)
                 )
                 var stateUp = StateUp(
-                    rendering: (c == reference.c && reference.v <= 1),
+                    rendering: (c == reference.chapterStart && reference.verseStart <= 1),
                     lineIsEmpty: true,
                     firstLineHeadIndent: 0,
                     headIndent: 0,

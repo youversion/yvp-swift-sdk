@@ -33,7 +33,7 @@ struct DemoView: View {
     @StateObject private var version: BibleVersion
     
     init () {
-        _version = StateObject(wrappedValue: BibleVersion(111).readied())
+        _version = StateObject(wrappedValue: BibleVersion(111).readied)
     }
 
     var body: some View {
@@ -49,7 +49,7 @@ you should wrap BibleTextView inside a normal SwiftUI ScrollView.
 
 ### In case you're interested:
 
-The function `.readied()` causes the YouVersionPlatform SDK to fetch metadata about 
+The function `.readied` causes the YouVersionPlatform SDK to fetch metadata about 
 the given Bible version from the server. That happens in a background task. 
 Once that finishes, the `version.usfm()` call will return a valid BibleReference
 object, which then allows the `BibleTextView` to be displayed.
@@ -116,7 +116,7 @@ Once you have a LAT (see above), you can use it like this:
 private func loadUI(lat: String) {
     Task {
         do {
-            let info = try await YouVersionPlatform.fetchUserInfo(lat: lat)
+            let info = try await YouVersionPlatform.userInfo(lat: lat)
             self.userWelcome = "Welcome, \(info.firstName)!"
         } catch {
             // handle the error

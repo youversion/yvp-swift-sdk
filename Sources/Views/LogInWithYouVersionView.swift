@@ -13,9 +13,9 @@ public enum LoginButtonShape {
 
 public struct LoginWithYouVersionButton: View {
     @Environment(\.colorScheme) var colorScheme
-    @State var shape = LoginButtonShape.button
-    @State var mode: LoginWithYouVersionModes = .full
-    @State var stroked = true
+    @State private var shape = LoginButtonShape.button
+    @State private var mode: LoginWithYouVersionModes = .full
+    @State private var stroked = true
     private let padV = CGFloat(12)
     private let padH = CGFloat(20)
     private let strokeWidth = CGFloat(1.5)
@@ -32,13 +32,13 @@ public struct LoginWithYouVersionButton: View {
         self.onTap = onTap
     }
     
-    func getStrokeColor() -> Color {
-        let colorGray25 = Color(red: 0x82/256, green: 0x80/256, blue: 0x80/256)
-        let colorGray35 = Color(red: 0x47/256, green: 0x45/256, blue: 0x45/256)
+    private var strokeColor: Color {
+        let colorGray25 = Color(red: 0x82 / 256, green: 0x80 / 256, blue: 0x80 / 256)
+        let colorGray35 = Color(red: 0x47 / 256, green: 0x45 / 256, blue: 0x45 / 256)
         return colorScheme == .dark ? colorGray35 : colorGray25
     }
     
-    func bibleAppLogo() -> some View {
+    private var bibleAppLogo: some View {
 #if SWIFT_PACKAGE
         return Image("BibleAppLogo@4x", bundle: .module)
             .resizable()
@@ -57,7 +57,7 @@ public struct LoginWithYouVersionButton: View {
         }
     }
     
-    private func makeLocalizedLoginText() -> Text {
+    private var localizedLoginText: Text {
         let fullText = NSLocalizedString(
             "Sign in with YouVersion",
             comment: "Login button text, 'YouVersion' must stay untranslated but may move position"
@@ -80,7 +80,7 @@ public struct LoginWithYouVersionButton: View {
         Button(action: onTap) {
             if mode == .iconOnly {
                 HStack(spacing: 0) {
-                    bibleAppLogo()
+                    bibleAppLogo
                         .padding(padV)  // it's deliberate that we're not using padH here
                         .foregroundColor(colorScheme == .dark ? .white : .black)
                         .background(colorScheme == .dark ? Color.black : Color.white)
@@ -88,14 +88,14 @@ public struct LoginWithYouVersionButton: View {
                         .clipShape(RoundedRectangle(cornerRadius: cornerRadius()))
                         .overlay(
                             RoundedRectangle(cornerRadius: cornerRadius())
-                                .stroke(getStrokeColor(), lineWidth: stroked ? strokeWidth : 0)
+                                .stroke(strokeColor, lineWidth: stroked ? strokeWidth : 0)
                         )
                 }
             } else if mode == .full {
                 HStack(spacing: 0) {
-                    bibleAppLogo()
+                    bibleAppLogo
                         .padding(.trailing, 8)
-                    makeLocalizedLoginText()
+                    localizedLoginText
                 }
                 .padding(.vertical, padV)
                 .padding(.horizontal, padH)
@@ -105,11 +105,11 @@ public struct LoginWithYouVersionButton: View {
                 .clipShape(RoundedRectangle(cornerRadius: cornerRadius()))
                 .overlay(
                     RoundedRectangle(cornerRadius: cornerRadius())
-                        .stroke(getStrokeColor(), lineWidth: stroked ? strokeWidth : 0)
+                        .stroke(strokeColor, lineWidth: stroked ? strokeWidth : 0)
                 )
             } else if mode == .compact {
                 HStack(spacing: 0) {
-                    bibleAppLogo()
+                    bibleAppLogo
                         .padding(.trailing, 8)
                     Text("Sign in")
                 }
@@ -121,7 +121,7 @@ public struct LoginWithYouVersionButton: View {
                 .clipShape(RoundedRectangle(cornerRadius: cornerRadius()))
                 .overlay(
                     RoundedRectangle(cornerRadius: cornerRadius())
-                        .stroke(getStrokeColor(), lineWidth: stroked ? strokeWidth : 0)
+                        .stroke(strokeColor, lineWidth: stroked ? strokeWidth : 0)
                 )
             }
         }

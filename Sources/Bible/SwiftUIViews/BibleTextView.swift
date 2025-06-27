@@ -10,7 +10,7 @@ public struct BibleTextView: View {
     private let onVerseTap: VerseTapAction?
     private let fonts: BibleTextFonts
     private let uiFonts: BibleTextUIFonts
-    private let rtl: Bool = false
+    private let rtl = false
     @State private var blocks: [BibleTextBlock]
     @State private var ourFrames: [UUID: CGRect] = [:]  // actual frames of each UI widget holding tappable text
     @Environment(\.colorScheme) var colorScheme  // for detecting when the user switches in/out of dark mode
@@ -45,14 +45,16 @@ public struct BibleTextView: View {
         .onChange(of: ref) { Task { await loadBlocks() } }
         .coordinateSpace(name: "BibleTextView")
     }
-
+    
     private func loadBlocks() async {
-        self.blocks = await BibleVersionRendering.textBlocksAsync(self.ref,
-                                                                  renderFootnotes: options.footnoteMode != .none,
-                                                                  footnoteMarker: options.footnoteMarker,
-                                                                  wocColor: self.options.wocColor,
-                                                                  fonts: self.fonts,
-                                                                  uiFonts: self.uiFonts)
+        blocks = await BibleVersionRendering.textBlocksAsync(
+            ref,
+            renderFootnotes: options.footnoteMode != .none,
+            footnoteMarker: options.footnoteMarker,
+            wocColor: options.wocColor,
+            fonts: fonts,
+            uiFonts: uiFonts
+        )
     }
 
     private func addHighlight(_ block: BibleTextBlock) -> BibleTextBlock {
@@ -64,17 +66,15 @@ public struct BibleTextView: View {
         }
 
         let highlightedBlock = block
-        let opacity = (colorScheme == .dark ? 0.35 : 1.0)
-        for highlight in highlights {
-            guard highlight.chapter == block.chapter else { continue }
-
+        let opacity = colorScheme == .dark ? 0.35 : 1.0
+        for highlight in highlights where highlight.chapter == block.chapter {
             // Find all verse ranges that match the highlight's verse
             for i in stride(from: 0, to: verseOffsets.count, by: 2) {
-                let verseNum = verseOffsets[i+1]
+                let verseNum = verseOffsets[i + 1]
                 if verseNum == highlight.verse {
                     var str = block.text.two
                     let offset = verseOffsets[i]
-                    let nextOffset = (i + 2 < verseOffsets.count) ? verseOffsets[i+2] : str.characters.count
+                    let nextOffset = (i + 2 < verseOffsets.count) ? verseOffsets[i + 2] : str.characters.count
 
                     let startIndex = str.characters.index(str.startIndex, offsetBy: offset)
                     let endIndex = str.characters.index(str.startIndex, offsetBy: nextOffset)
@@ -210,14 +210,16 @@ public struct BibleTextView: View {
         guard let block = findBlockById(blockId) else {
             return nil
         }
-        guard let i = determineCharacterIndex(for: pointInView,
-                                              firstLineHeadIndent: block.firstLineHeadIndent,
-                                              lineSpacing: options.lineSpacing,
-                                              text: block.text.one,
-                                              size: ourFrame.size) else {
+        guard let i = characterIndex(
+            for: pointInView,
+            firstLineHeadIndent: block.firstLineHeadIndent,
+            lineSpacing: options.lineSpacing,
+            text: block.text.one,
+            size: ourFrame.size
+        ) else {
             return nil
         }
-        guard let verse = determineVerseAtIndex(i - extraChars, from: block) else {
+        guard let verse = verseAtIndex(i - extraChars, from: block) else {
             return nil
         }
         return verse
@@ -227,17 +229,23 @@ public struct BibleTextView: View {
                            blockId: UUID,
                            blockText: NSAttributedString,
                            extraChars: Int = 0) {
-        if let verse = verseNumFromPoint(pointInView: pointInView,
-                                         blockId: blockId,
-                                         blockText: blockText,
-                                         extraChars: extraChars) {
+        if let verse = verseNumFromPoint(
+            pointInView: pointInView,
+            blockId: blockId,
+            blockText: blockText,
+            extraChars: extraChars
+        ) {
             if let ourFrame = ourFrames[blockId],
-                let block = findBlockById(blockId) {
-                let pointInSelf = CGPoint(x: pointInView.x + ourFrame.origin.x,
-                                          y: pointInView.y + ourFrame.origin.y)
-                let info = BibleVerseData(chapter: block.chapter,
-                                          verse: verse,
-                                          footnotes: block.footnotes.map({ double in double.two }))
+               let block = findBlockById(blockId) {
+                let pointInSelf = CGPoint(
+                    x: pointInView.x + ourFrame.origin.x,
+                    y: pointInView.y + ourFrame.origin.y
+                )
+                let info = BibleVerseData(
+                    chapter: block.chapter,
+                    verse: verse,
+                    footnotes: block.footnotes.map({ double in double.two })
+                )
                 onVerseTap?(info, pointInSelf)
             }
         }

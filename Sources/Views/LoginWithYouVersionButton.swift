@@ -1,29 +1,30 @@
 import SwiftUI
 
-public enum LoginWithYouVersionModes: String, CaseIterable {
-    case full
-    case compact
-    case iconOnly
-}
-
-public enum LoginButtonShape {
-    case button
-    case rectangle
-}
-
 public struct LoginWithYouVersionButton: View {
+    
+    public enum Mode: String, CaseIterable {
+        case full
+        case compact
+        case iconOnly
+    }
+
+    public enum Shape {
+        case button
+        case rectangle
+    }
+    
     @Environment(\.colorScheme) var colorScheme
-    @State private var shape = LoginButtonShape.button
-    @State private var mode: LoginWithYouVersionModes = .full
+    @State private var shape: Shape = .button
+    @State private var mode: Mode = .full
     @State private var stroked = true
-    private let padV = CGFloat(12)
-    private let padH = CGFloat(20)
+    private let verticalPadding = CGFloat(12)
+    private let horizontalPadding = CGFloat(20)
     private let strokeWidth = CGFloat(1.5)
     @ScaledMetric(relativeTo: .body) private var iconSize: CGFloat = 24
     let onTap: () -> Void
     
-    public init(shape: LoginButtonShape = .button,
-                mode: LoginWithYouVersionModes = .full,
+    public init(shape: Shape = .button,
+                mode: Mode = .full,
                 stroked: Bool = true,
                 onTap: @escaping () -> Void) {
         self.shape = shape
@@ -50,7 +51,7 @@ public struct LoginWithYouVersionButton: View {
 #endif
     }
     
-    func cornerRadius(_ shape: LoginButtonShape? = nil) -> CGFloat {
+    func cornerRadius(_ shape: Shape? = nil) -> CGFloat {
         switch shape ?? self.shape {
         case .button: 40
         case .rectangle: 4
@@ -78,10 +79,11 @@ public struct LoginWithYouVersionButton: View {
     
     public var body: some View {
         Button(action: onTap) {
-            if mode == .iconOnly {
+            switch mode {
+            case .iconOnly:
                 HStack(spacing: 0) {
                     bibleAppLogo
-                        .padding(padV)  // it's deliberate that we're not using padH here
+                        .padding(verticalPadding)  // it's deliberate that we're not using horizontalPadding here
                         .foregroundColor(colorScheme == .dark ? .white : .black)
                         .background(colorScheme == .dark ? Color.black : Color.white)
                         .cornerRadius(cornerRadius(.rectangle))
@@ -91,14 +93,14 @@ public struct LoginWithYouVersionButton: View {
                                 .stroke(strokeColor, lineWidth: stroked ? strokeWidth : 0)
                         )
                 }
-            } else if mode == .full {
+            case .full:
                 HStack(spacing: 0) {
                     bibleAppLogo
                         .padding(.trailing, 8)
                     localizedLoginText
                 }
-                .padding(.vertical, padV)
-                .padding(.horizontal, padH)
+                .padding(.vertical, verticalPadding)
+                .padding(.horizontal, horizontalPadding)
                 .foregroundColor(colorScheme == .dark ? .white : .black)
                 .background(colorScheme == .dark ? Color.black : Color.white)
                 .cornerRadius(cornerRadius())
@@ -107,14 +109,14 @@ public struct LoginWithYouVersionButton: View {
                     RoundedRectangle(cornerRadius: cornerRadius())
                         .stroke(strokeColor, lineWidth: stroked ? strokeWidth : 0)
                 )
-            } else if mode == .compact {
+            case .compact:
                 HStack(spacing: 0) {
                     bibleAppLogo
                         .padding(.trailing, 8)
                     Text("Sign in")
                 }
-                .padding(.vertical, padV)
-                .padding(.horizontal, padH)
+                .padding(.vertical, verticalPadding)
+                .padding(.horizontal, horizontalPadding)
                 .foregroundColor(colorScheme == .dark ? .white : .black)
                 .background(colorScheme == .dark ? Color.black : Color.white)
                 .cornerRadius(cornerRadius())

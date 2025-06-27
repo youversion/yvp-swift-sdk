@@ -1,22 +1,23 @@
 name: Swift Package Tests
 
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+on: [push, pull_request]
 
 jobs:
   test:
-    name: Run Unit Tests
     runs-on: macos-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      # Check out the repository
+      - uses: actions/checkout@v4
 
-      - name: Set up Xcode
-        run: sudo xcode-select -s /Applications/Xcode_16.4.app
+      # Set up the Swift environment
+      - uses: swift-actions/setup-swift@65540b95f51493d65f5e59e97dcef9629ddf11bf
+        with:
+          swift-version: "6.1" # Specify the Swift version you want to use
 
-      - name: Build and test
-        run: swift test --enable-code-coverage
+      # Build the Swift package
+      - name: Build
+        run: swift build
+
+      # Run unit tests
+      - name: Run tests
+        run: swift test

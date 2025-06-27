@@ -610,6 +610,7 @@ opt_in_rules: # some rules are only opt-in
 # included: # paths to include during linting. `--path` is ignored if present.
 #   - Source
 excluded: # paths to ignore during linting. Takes precedence over `included`.
+  - Tests
   - Package.swift
   - Sources/Utilities/ThreadSafeDictionary.swift
   - '**/derived_data'

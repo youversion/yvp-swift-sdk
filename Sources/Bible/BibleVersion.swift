@@ -22,7 +22,7 @@ public class BibleVersion: ObservableObject {
         }
         Task {
             await loadMetadataIfNeeded()
-            self.isReady = (self.metadata != nil)
+            isReady = metadata != nil
         }
         return self
     }
@@ -57,7 +57,7 @@ public class BibleVersion: ObservableObject {
             return nil
         }
         let usfm = name.uppercased()
-        for usfmCode in metadata.books.map(\.self.usfm) where usfmCode == usfm {
+        for usfmCode in metadata.books.map(\.usfm) where usfmCode == usfm {
             return usfmCode
         }
         return nil

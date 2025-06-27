@@ -27,5 +27,6 @@ let package = Package(
                 .product(name: "SwiftProtobuf", package: "swift-protobuf")
             ]
         ),
+        .testTarget(name: "YouVersionPlatformTests", dependencies: ["YouVersionPlatform"]),
     ]
 )

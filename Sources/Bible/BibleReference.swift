@@ -1,12 +1,12 @@
 import Foundation
 
 public struct BibleReference: Comparable, Codable, Hashable {
-    public var versionId = 0
+    public let versionId: Int
     public var book: String?
-    public var c = 0
-    public var c2 = 0
-    public var v = 0
-    public var v2 = 0
+    public let c: Int
+    public let c2: Int
+    public let v: Int
+    public let v2: Int
 
     public init(versionId: Int, b: String, c: Int, v: Int) {
         self.versionId = versionId

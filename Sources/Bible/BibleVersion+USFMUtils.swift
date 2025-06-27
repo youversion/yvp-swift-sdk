@@ -42,7 +42,7 @@ extension BibleVersion {
                 if (c == c2) && (v > v2) {
                     return nil
                 }
-                return BibleReference(versionCode: code, b: String(bText), c: c, v: v, c2: c2, v2: v2)
+                return BibleReference(versionId: id, b: String(bText), c: c, v: v, c2: c2, v2: v2)
             }
             return nil
         }
@@ -63,7 +63,7 @@ extension BibleVersion {
                 if (c == c2) && (v > v2) {
                     return nil
                 }
-                return BibleReference(versionCode: code, b: String(bText), c: c, v: v, c2: c2, v2: v2)
+                return BibleReference(versionId: id, b: String(bText), c: c, v: v, c2: c2, v2: v2)
             }
             return nil
         }
@@ -75,7 +75,7 @@ extension BibleVersion {
                 if v > v2 {
                     return nil
                 }
-                return BibleReference(versionCode: code, b: String(bText), c: c, v: v, c2: c, v2: v2)
+                return BibleReference(versionId: id, b: String(bText), c: c, v: v, c2: c, v2: v2)
             }
             return nil
         }
@@ -84,7 +84,7 @@ extension BibleVersion {
         if let match = text.wholeMatch(of: patBCV) {
             let (_, bText, cText, vText) = match.output
             if let c = Int(cText), let v = Int(vText) {
-                return BibleReference(versionCode: code, b: String(bText), c: c, v: v)
+                return BibleReference(versionId: id, b: String(bText), c: c, v: v)
             }
             return nil
         }
@@ -93,7 +93,7 @@ extension BibleVersion {
         if let match = text.wholeMatch(of: patBC) {
             let (_, bText, cText) = match.output
             if let c = Int(cText) {
-                return BibleReference(versionCode: code, b: String(bText), c: c, v: 0)
+                return BibleReference(versionId: id, b: String(bText), c: c, v: 0)
             }
             return nil
         }
@@ -105,7 +105,7 @@ extension BibleVersion {
                 if c > c2 {
                     return nil
                 }
-                return BibleReference(versionCode: code, b: String(bText), c: c, v: 0, c2: c2, v2: 0)
+                return BibleReference(versionId: id, b: String(bText), c: c, v: 0, c2: c2, v2: 0)
             }
             return nil
         }

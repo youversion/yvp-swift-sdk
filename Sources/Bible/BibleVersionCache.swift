@@ -12,37 +12,37 @@ class BibleVersionCache {
     private static let chaptersCache = ThreadSafeDictionary<String, YVDOMContent>()
     private static let versionsCache = ThreadSafeDictionary<Int, BibleVersionData>()
 
-    static func metadataIfCached(code: Int) -> BibleVersionData? {
-        if let v = versionsCache[code] {
+    static func metadataIfCached(versionId: Int) -> BibleVersionData? {
+        if let v = versionsCache[versionId] {
             return v
         }
 
-        let cachePath = urlForCachedMetadata(code).path
+        let cachePath = urlForCachedMetadata(versionId).path
         if FileManager.default.fileExists(atPath: cachePath),
             let filedata = FileManager.default.contents(atPath: cachePath) {
             if let v = try? JSONDecoder().decode(BibleVersionObject.self, from: filedata) {
-                //print("Loaded metadata for \(code) from \(cachePath)")
-                versionsCache[code] = v.response.data
+                //print("Loaded metadata for \(versionId) from \(cachePath)")
+                versionsCache[versionId] = v.response.data
                 return v.response.data
             }
         }
         return nil
     }
 
-    static func metadataFromServer(code: Int) async throws -> BibleVersionData {
-        if let version = metadataIfCached(code: code) {
+    static func metadataFromServer(versionId: Int) async throws -> BibleVersionData {
+        if let version = metadataIfCached(versionId: versionId) {
             return version
         }
 
         do {
-            let data = try await BibleVersionAPIs.metadata(code: code)
+            let data = try await BibleVersionAPIs.metadata(versionId: versionId)
 
             let versionObject = try JSONDecoder().decode(BibleVersionObject.self, from: data)
             let metadata = versionObject.response.data
-            versionsCache[code] = metadata
+            versionsCache[versionId] = metadata
 
             // Cache the raw data to disk
-            let cachePath = urlForCachedMetadata(code).path
+            let cachePath = urlForCachedMetadata(versionId).path
             FileManager.default.createFile(atPath: cachePath, contents: data)
 
             return metadata
@@ -72,13 +72,13 @@ class BibleVersionCache {
             return nil
         }
 
-        let cacheKey = "\(reference.versionCode).\(book).\(reference.c)"
+        let cacheKey = "\(reference.versionId).\(book).\(reference.c)"
         if let c = chaptersCache[cacheKey] {
             return c
         }
 
-        if let meta = metadataIfCached(code: reference.versionCode) {
-            let dir = urlForCachedVersion(reference.versionCode, version: meta.offline?.build?.max ?? 0)
+        if let meta = metadataIfCached(versionId: reference.versionId) {
+            let dir = urlForCachedVersion(reference.versionId, offlineBuildVersion: meta.offline?.build?.max ?? 0)
             let fileURL = dir.appendingPathComponent(usfm)
             if let data = try? Data(contentsOf: fileURL) {
                 if let c = try? YVDOMContent(serializedBytes: data) {
@@ -106,7 +106,7 @@ class BibleVersionCache {
 
         do {
             let content = try await BibleVersionAPIs.chapter(ref: reference)
-            let cacheKey = "\(reference.versionCode).\(book).\(reference.c)"
+            let cacheKey = "\(reference.versionId).\(book).\(reference.c)"
             chaptersCache[cacheKey] = content
             writeChapterToCache(ref: reference, content: content)
             return content
@@ -123,9 +123,9 @@ class BibleVersionCache {
         // 3. write content to fileURL = dir.appendingPathComponent(ref.toUSFMOfChapter)
     }
 
-    private static func urlForCachedVersion(_ code: Int, version: Int) -> URL {
+    private static func urlForCachedVersion(_ versionId: Int, offlineBuildVersion: Int) -> URL {
         let cachesDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
-        return cachesDirectory.appendingPathComponent("bible_\(code)_\(version)")
+        return cachesDirectory.appendingPathComponent("bible_\(versionId)_\(offlineBuildVersion)")
     }
 
 }

@@ -16,6 +16,5 @@ jobs:
 
       # Build and run unit tests
       - name: Run tests
-        run: xcodebuild -scheme YouVersionPlatform-Package \
-               -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.4' \
-               clean test
+        run: |
+          xcodebuild -scheme YouVersionPlatform -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.4' test

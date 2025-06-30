@@ -1,6 +1,6 @@
 import Foundation
 
-public enum URLBuilder {
+enum URLBuilder {
     
     private static var baseURLComponents: URLComponents {
         var components = URLComponents()

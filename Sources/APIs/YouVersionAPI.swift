@@ -120,14 +120,12 @@ public enum YouVersionAPI {
 
         struct BibleHighlightResponse: Decodable {
             let color: String?
-            let created_dt: Int?
-            let updated_dt: Int?
             let usfm: String?
             let version: Int?
         }
         
-        func convertHighlightResponse(_ response: BibleHighlightResponse, version: BibleVersion) -> BibleHighlight? {
-            guard let usfm = response.usfm, let reference = version.simpleUsfmParse(usfm) else {
+        func highlight(from response: BibleHighlightResponse, version: BibleVersion) -> BibleHighlight? {
+            guard let usfm = response.usfm, let reference = version.unvalidatedReference(with: usfm) else {
                 return nil
             }
             return BibleHighlight(
@@ -141,6 +139,6 @@ public enum YouVersionAPI {
         guard let decodedResponse = try? JSONDecoder().decode(BibleHighlightsResponseList.self, from: data) else {
             throw URLError(.badServerResponse)
         }
-        return decodedResponse.highlights.compactMap { convertHighlightResponse($0, version: version) }
+        return decodedResponse.highlights.compactMap { highlight(from: $0, version: version) }
     }
 }

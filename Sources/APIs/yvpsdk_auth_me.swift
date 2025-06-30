@@ -31,12 +31,12 @@ public struct YouVersionUserInfo: Codable, Sendable {
     }
 }
 
-public func userInfo(lat: String) async throws -> YouVersionUserInfo {
-    if lat == "preview" {
+public func userInfo(accessToken: String) async throws -> YouVersionUserInfo {
+    if accessToken == "preview" {
         return YouVersionUserInfo.preview
     }
     
-    guard let url = URLBuilder.userURL(accessToken: lat) else {
+    guard let url = URLBuilder.userURL(accessToken: accessToken) else {
         throw URLError(.badURL)
     }
     

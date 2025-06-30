@@ -113,10 +113,10 @@ Finally, inside your SwiftUI view, add the button and start the login process wh
 
 Once you have a LAT (see above), you can use it like this:
 ```
-private func loadUI(lat: String) {
+private func loadUI(accessToken: String) {
     Task {
         do {
-            let info = try await YouVersionPlatform.userInfo(lat: lat)
+            let info = try await YouVersionPlatform.userInfo(accessToken: accessToken)
             self.userWelcome = "Welcome, \(info.firstName)!"
         } catch {
             // handle the error

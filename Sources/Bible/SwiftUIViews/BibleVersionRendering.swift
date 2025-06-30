@@ -124,7 +124,7 @@ struct BibleVersionRendering {
         return ret
     }
 
-    private static func handleBlockKid(
+    private static func handleBlockChild(
         _ node: Youversion_Red_Biblecontent_Api_Model_Youversion_ApiNode,
         stateIn: StateIn,
         stateDown parentStateDown: StateDown,
@@ -132,7 +132,7 @@ struct BibleVersionRendering {
     ) {
         var stateDown = parentStateDown
         if node.type != .span && node.type != .text {
-            assertionFailed("handleBlockKid: unexpected:", type: node.type)
+            assertionFailed("handleBlockChild: unexpected:", type: node.type)
         }
 
         interpretTextAttr(node, stateIn: stateIn, stateDown: &stateDown, stateUp: &stateUp)
@@ -174,8 +174,8 @@ struct BibleVersionRendering {
         } else if node.classes.contains("yv-n") && node.classes.contains("x") {
             // cross-reference; present e.g. in ESV
         } else {
-            for kid in node.children {
-                handleBlockKid(kid, stateIn: stateIn, stateDown: stateDown, stateUp: &stateUp)
+            for child in node.children {
+                handleBlockChild(child, stateIn: stateIn, stateDown: stateDown, stateUp: &stateUp)
                 stateUp.lineIsEmpty = false  // TODO: this line has existed for a while. Should it?
             }
         }
@@ -193,14 +193,14 @@ struct BibleVersionRendering {
             // now, collect the text of the footnotes into footState
             var footState = StateUp(rendering: true, chapter: stateUp.chapter, verse: stateUp.verse)
             stateDown.currentFont = DoubleFont(one: stateIn.fonts.one.footnote, two: stateIn.fonts.two.footnote)
-            for kid in node.children {
-                handleBlockKid(kid, stateIn: stateIn, stateDown: stateDown, stateUp: &footState)
+            for child in node.children {
+                handleBlockChild(child, stateIn: stateIn, stateDown: stateDown, stateUp: &footState)
             }
             stateUp.footnotes.append(footState.text)
         } else {
-            for kid in node.children {
+            for child in node.children {
                 stateDown.currentFont = DoubleFont(one: stateIn.fonts.one.footnote, two: stateIn.fonts.two.footnote)
-                handleBlockKid(kid, stateIn: stateIn, stateDown: stateDown, stateUp: &stateUp)
+                handleBlockChild(child, stateIn: stateIn, stateDown: stateDown, stateUp: &stateUp)
             }
             // TODO: add a space here? Maybe only if it doesn't already end with whitespace?
         }
@@ -214,13 +214,13 @@ struct BibleVersionRendering {
         stateUp: inout StateUp
     ) {
         var stateDown = parentStateDown
-        for kid in node.children {
-            if kid.type == .span || kid.type == .text {
+        for child in node.children {
+            if child.type == .span || child.type == .text {
                 stateDown.currentFont = DoubleFont(one: stateIn.fonts.one.textFont, two: stateIn.fonts.two.textFont)
-                handleBlockKid(kid, stateIn: stateIn, stateDown: stateDown, stateUp: &stateUp)
-                // handleBlockKid puts its result into stateUp.text
+                handleBlockChild(child, stateIn: stateIn, stateDown: stateDown, stateUp: &stateUp)
+                // handleBlockChild puts its result into stateUp.text
             } else {
-                assertionFailed("unexpected child of cell: ", type: kid.type)
+                assertionFailed("unexpected child of cell: ", type: child.type)
             }
         }
     }
@@ -233,16 +233,16 @@ struct BibleVersionRendering {
     ) -> [DoubleAttributedString] {
         let stateDown = parentStateDown
         var thisRow: [DoubleAttributedString] = []
-        for kid in node.children {
-            if kid.type == .cell {
-                handleNodeCell(node: kid, stateIn: stateIn, stateDown: stateDown, stateUp: &stateUp)
+        for child in node.children {
+            if child.type == .cell {
+                handleNodeCell(node: child, stateIn: stateIn, stateDown: stateDown, stateUp: &stateUp)
                 if stateUp.rendering {
                     stateUp.text.trimTrailingWhitespaceAndNewlines()
                     thisRow.append(stateUp.text)
                     stateUp.clearText()
                 }
             } else {
-                assertionFailed("unexpected child of row: ", type: kid.type)
+                assertionFailed("unexpected child of row: ", type: child.type)
             }
         }
         return thisRow
@@ -261,14 +261,14 @@ struct BibleVersionRendering {
         if !node.classes.isEmpty {
             assertionFailed("unexpected classes for this table: ", string: "\(node.classes)")
         }
-        for kid in node.children {
-            if kid.type == .row {
-                let row = handleNodeRow(node: kid, stateIn: stateIn, stateDown: stateDown, stateUp: &stateUp)
+        for child in node.children {
+            if child.type == .row {
+                let row = handleNodeRow(node: child, stateIn: stateIn, stateDown: stateDown, stateUp: &stateUp)
                 if !row.isEmpty {
                     rows.append(row)
                 }
             } else {
-                assertionFailed("unexpected child of table: ", type: kid.type)
+                assertionFailed("unexpected child of table: ", type: child.type)
             }
         }
         if !rows.isEmpty {
@@ -315,28 +315,28 @@ struct BibleVersionRendering {
             marginTop: &marginTop
         )
 
-        for kid in node.children {
+        for child in node.children {
             // types: block, span, text. Table, row, cell.
-            if kid.type == .block || kid.type == .table {
+            if child.type == .block || child.type == .table {
                 if !stateUp.text.isEmpty {
                     if stateUp.rendering {
                         ret.append(createBlock(stateDown: stateDown, stateUp: &stateUp, marginTop: marginTop))
                     }
                     stateUp.clearText()
                 }
-                if kid.type == .block {
-                    handleNodeBlock(node: kid, stateIn: stateIn, stateDown: stateDown, stateUp: &stateUp, ret: &ret)
-                } else if kid.type == .table {
-                    handleNodeTable(node: kid, stateIn: stateIn, stateDown: stateDown, stateUp: &stateUp, ret: &ret)
+                if child.type == .block {
+                    handleNodeBlock(node: child, stateIn: stateIn, stateDown: stateDown, stateUp: &stateUp, ret: &ret)
+                } else if child.type == .table {
+                    handleNodeTable(node: child, stateIn: stateIn, stateDown: stateDown, stateUp: &stateUp, ret: &ret)
                 }
             } else {
-                if kid.type == .span && kid.classes.contains("qs") {  // Selah. Force a line break and right-alignment.
+                if child.type == .span && child.classes.contains("qs") {  // Selah. Force a line break and right-alignment.
                     if !stateUp.text.isEmpty {
                         if stateUp.rendering {
                             ret.append(createBlock(stateDown: stateDown, stateUp: &stateUp, marginTop: marginTop))
                             stateUp.clearText()
                             //stateDown.marginTop = marginTop  // TODO
-                            handleBlockKid(kid, stateIn: stateIn, stateDown: stateDown, stateUp: &stateUp)
+                            handleBlockChild(child, stateIn: stateIn, stateDown: stateDown, stateUp: &stateUp)
                             var tmpStateDown = stateDown
                             tmpStateDown.alignment = .trailing
                             ret.append(createBlock(stateDown: tmpStateDown, stateUp: &stateUp, marginTop: marginTop))
@@ -344,7 +344,7 @@ struct BibleVersionRendering {
                         stateUp.clearText()
                     }
                 } else {
-                    handleBlockKid(kid, stateIn: stateIn, stateDown: stateDown, stateUp: &stateUp)
+                    handleBlockChild(child, stateIn: stateIn, stateDown: stateDown, stateUp: &stateUp)
                 }
             }
         }

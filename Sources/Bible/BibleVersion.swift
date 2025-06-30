@@ -41,11 +41,11 @@ public class BibleVersion: ObservableObject {
         }
     }
 
-    public static func findByLanguage(_ lang: String? = nil) async -> [BibleVersionOverview] {
+    public static func forLanguageTag(_ languageTag: String? = nil) async -> [BibleVersionOverview] {
         do {
-            return try await BibleVersionAPIs.versions(forLanguageTag: lang)
+            return try await BibleVersionAPIs.versions(forLanguageTag: languageTag)
         } catch {
-            print("findByLanguage error: \(error.localizedDescription)")
+            print("forLanguageTag error: \(error.localizedDescription)")
             return []
         }
     }
@@ -186,8 +186,8 @@ public class BibleVersion: ObservableObject {
         return true
     }
 
-    public func mergeOverlapping(refs: [BibleReference]) -> [BibleReference] {
-        var tmp = refs
+    public func mergeOverlapping(references: [BibleReference]) -> [BibleReference] {
+        var tmp = references
         tmp.sort()
         var i = 1
         while i < tmp.count {

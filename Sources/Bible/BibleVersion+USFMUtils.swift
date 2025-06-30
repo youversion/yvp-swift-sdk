@@ -2,26 +2,25 @@ import Foundation
 
 extension BibleVersion {
     
-    public func usfm(_ txt: String) -> BibleReference? {
-        guard self.isReady else {
+    public func reference(with usfm: String) -> BibleReference? {
+        guard isReady else {
             return nil
         }
 
-        let text = txt.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
-        let len = text.count
-        if len < 3 {
+        let trimmedUSFM = usfm.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        guard trimmedUSFM.count >= 3 else {
             return nil
         }
 
         // if there's a range indicated with + characters, return the first valid range:
-        let subs = text.split(separator: "+")
-        if subs.count > 1 {
-            let refs = subs.map { usfm(String($0)) }
-            let merged = mergeOverlapping(refs: refs.compactMap { $0 })
-            return merged[0]
+        let subUSFMs = trimmedUSFM.split(separator: "+")
+        if subUSFMs.count > 1 {
+            let refs = subUSFMs.compactMap { reference(with: String($0)) }
+            let merged = mergeOverlapping(references: refs.compactMap { $0 })
+            return merged.first
         }
 
-        if var reference = simpleUsfmParse(txt), let validBook = isValidUSFMBookName(reference.bookUSFM ?? "") {
+        if var reference = unvalidatedReference(with: usfm), let validBook = isValidUSFMBookName(reference.bookUSFM ?? "") {
             reference.bookUSFM = validBook
             return reference
         }
@@ -29,11 +28,11 @@ extension BibleVersion {
         return nil
     }
 
-    /// Most people should call usfm(); this skips all validation and only handles the simple easy case.
+    /// Most people should call `reference(with:)`. This function skips all validation and only handles the simple case.
     /// In particular, the book name is not validated.
-    nonisolated func simpleUsfmParse(_ text: String) -> BibleReference? {
+    nonisolated func unvalidatedReference(with usfm: String) -> BibleReference? {
         let patBCVCV = /(\w\w\w)\.(\d+)\.(\d+)-(\d+)\.(\d+)/
-        if let match = text.wholeMatch(of: patBCVCV) {
+        if let match = usfm.wholeMatch(of: patBCVCV) {
             let (_, bText, cText, vText, c2Text, v2Text) = match.output
             if let c = Int(cText), let v = Int(vText), let c2 = Int(c2Text), let v2 = Int(v2Text) {
                 if c > c2 {
@@ -48,7 +47,7 @@ extension BibleVersion {
         }
         
         let patBCVBCV = /(\w\w\w)\.(\d+)\.(\d+)-(\w\w\w)\.(\d+)\.(\d+)/
-        if let match = text.wholeMatch(of: patBCVBCV) {
+        if let match = usfm.wholeMatch(of: patBCVBCV) {
             let (_, bText, cText, vText, b2Text, c2Text, v2Text) = match.output
             if let c = Int(cText),
                let v = Int(vText),
@@ -69,7 +68,7 @@ extension BibleVersion {
         }
         
         let patBCVV = /(\w\w\w)\.(\d+)\.(\d+)-(\d+)/
-        if let match = text.wholeMatch(of: patBCVV) {
+        if let match = usfm.wholeMatch(of: patBCVV) {
             let (_, bText, cText, vText, v2Text) = match.output
             if let c = Int(cText), let v = Int(vText), let v2 = Int(v2Text) {
                 if v > v2 {
@@ -81,7 +80,7 @@ extension BibleVersion {
         }
         
         let patBCV = /(\w\w\w)\.(\d+)\.(\d+)/
-        if let match = text.wholeMatch(of: patBCV) {
+        if let match = usfm.wholeMatch(of: patBCV) {
             let (_, bText, cText, vText) = match.output
             if let c = Int(cText), let v = Int(vText) {
                 return BibleReference(versionId: id, bookUSFM: String(bText), chapter: c, verse: v)
@@ -90,7 +89,7 @@ extension BibleVersion {
         }
         
         let patBC = /(\w\w\w)\.(\d+)/
-        if let match = text.wholeMatch(of: patBC) {
+        if let match = usfm.wholeMatch(of: patBC) {
             let (_, bText, cText) = match.output
             if let c = Int(cText) {
                 return BibleReference(versionId: id, bookUSFM: String(bText), chapter: c, verse: 0)
@@ -99,7 +98,7 @@ extension BibleVersion {
         }
         
         let patBCC = /(\w\w\w)\.(\d+)-(\d+)/
-        if let match = text.wholeMatch(of: patBCC) {
+        if let match = usfm.wholeMatch(of: patBCC) {
             let (_, bText, cText, c2Text) = match.output
             if let c = Int(cText), let c2 = Int(c2Text) {
                 if c > c2 {

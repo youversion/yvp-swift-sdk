@@ -56,7 +56,7 @@ public func logIn(
 }
 
 public struct YouVersionLoginResult: Sendable {
-    public let lat: String?
+    public let accessToken: String?
     public let permissions: [YVPPermission]
     public let errorMsg: String?
     public let yvpUserId: String?
@@ -77,10 +77,10 @@ private func parseAuthCallback(_ callbackURL: URL) throws -> YouVersionLoginResu
     ?? []
 
     if status == "success", let latValue, let yvpUserId {
-        return YouVersionLoginResult(lat: latValue, permissions: perms, errorMsg: nil, yvpUserId: yvpUserId)
+        return YouVersionLoginResult(accessToken: latValue, permissions: perms, errorMsg: nil, yvpUserId: yvpUserId)
     } else if status == "canceled" {
-        return YouVersionLoginResult(lat: nil, permissions: [], errorMsg: nil, yvpUserId: nil)
+        return YouVersionLoginResult(accessToken: nil, permissions: [], errorMsg: nil, yvpUserId: nil)
     }
     // error!
-    return YouVersionLoginResult(lat: nil, permissions: perms, errorMsg: callbackURL.query(), yvpUserId: nil)
+    return YouVersionLoginResult(accessToken: nil, permissions: perms, errorMsg: callbackURL.query(), yvpUserId: nil)
 }

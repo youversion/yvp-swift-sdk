@@ -3,7 +3,7 @@ import Foundation
 public func highlightsForChapter(
     usfm: String,
     version: BibleVersion,
-    lat: String
+    accessToken: String
 ) async throws -> [BibleHighlight] {
     if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
         return [BibleHighlight.preview]
@@ -13,7 +13,7 @@ public func highlightsForChapter(
         preconditionFailure("YouVersionPlatformConfiguration.appKey must be set.")
     }
     
-    guard let url = URLBuilder.highlightsURL(usfm: usfm, versionId: version.id, accessToken: lat) else {
+    guard let url = URLBuilder.highlightsURL(usfm: usfm, versionId: version.id, accessToken: accessToken) else {
         throw URLError(.badURL)
     }
     

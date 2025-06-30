@@ -1,14 +1,15 @@
 import Foundation
 import ZipArchive
 
-class BibleVersionCache {
+typealias YVDOMContent = Youversion_Red_Biblecontent_Api_Model_Youversion_ApiContent
+
+enum BibleVersionCache {
     enum BibleVersionCacheError: Error {
         case cannotDownload
         case invalidDownload
         case notPermitted
     }
 
-    public typealias YVDOMContent = Youversion_Red_Biblecontent_Api_Model_Youversion_ApiContent
     private static let chaptersCache = ThreadSafeDictionary<String, YVDOMContent>()
     private static let versionsCache = ThreadSafeDictionary<Int, BibleVersionData>()
 
@@ -59,9 +60,9 @@ class BibleVersionCache {
         }
     }
 
-    private static func urlForCachedMetadata(_ version: Int) -> URL {
+    private static func urlForCachedMetadata(_ versionId: Int) -> URL {
         let cachesDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
-        return cachesDirectory.appendingPathComponent("bible_\(version)")
+        return cachesDirectory.appendingPathComponent("bible_\(versionId)")
     }
 
     /// This probably is not a function that you want to call.

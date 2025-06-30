@@ -45,8 +45,6 @@ enum BibleVersionAPIs {
 
     // MARK: - Chapter Content
 
-    public typealias YVDOMContent = Youversion_Red_Biblecontent_Api_Model_Youversion_ApiContent
-
     /// Fetches a single chapter's content from the server
     static func chapter(reference: BibleReference) async throws -> YVDOMContent {
         guard let appKey = YouVersionPlatformConfiguration.appKey else {

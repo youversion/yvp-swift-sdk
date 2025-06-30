@@ -121,7 +121,13 @@ public enum YouVersionAPI {
         struct BibleHighlightResponse: Decodable {
             let color: String?
             let usfm: String?
-            let version: Int?
+            let versionId: Int?
+            
+            enum CodingKeys: String, CodingKey {
+                case color
+                case usfm
+                case versionId = "version_id"
+            }
         }
         
         func highlight(from response: BibleHighlightResponse, version: BibleVersion) -> BibleHighlight? {
@@ -129,7 +135,7 @@ public enum YouVersionAPI {
                 return nil
             }
             return BibleHighlight(
-                versionId: response.version ?? 0,
+                versionId: response.versionId ?? 0,
                 chapter: reference.chapterStart,
                 verse: reference.verseStart,
                 color: response.color ?? "#FFF9B1"

@@ -14,7 +14,7 @@
 ## Displaying Scripture in SwiftUI
 
 Create an init() function for your app if you don't already have one, and specify your app key there, like this:
-```
+```swift
 import YouVersionPlatform
 
 @main
@@ -26,7 +26,7 @@ struct yourApp: App {
 ```
 
 And now to display a single verse or verse range, this is all it takes:
-```
+```swift
 import YouVersionPlatform
 
 struct DemoView: View {
@@ -44,30 +44,30 @@ struct DemoView: View {
 }
 ```
 
-If you're displaying a longer passage of scripture than a single verse, 
-you should wrap BibleTextView inside a normal SwiftUI ScrollView.
+If you're displaying a longer passage of Scripture than a single verse, 
+you should wrap `BibleTextView` inside a normal SwiftUI ScrollView.
 
 ### In case you're interested:
 
 The function `.readied` causes the YouVersionPlatform SDK to fetch metadata about 
 the given Bible version from the server. That happens in a background task. 
-Once that finishes, the `version.usfm()` call will return a valid BibleReference
+Once that finishes, the `version.usfm(_:)` call will return a `BibleReference`
 object, which then allows the `BibleTextView` to be displayed.
 
-When BibleTextView is rendered, it will fetch the necessary Bible text 
-from the YouVersion server as needed, and display it as soon as it can.
+When `BibleTextView` is rendered, it will fetch the necessary Bible text 
+from the YouVersion server as needed and display it as soon as it can.
 It will also maintain a limited-size local cache of the Bible data for speed.
 
 ## Implementing Login
 
 To the view where you want to add a "Log In with YouVersion" button, add this:
-```
+```swift
 import YouVersionPlatform
 ```
 
 Add a helper class, which tells iOS where to display the system's login sheet.
 (See [here](https://developer.apple.com/documentation/authenticationservices/authenticating-a-user-through-a-web-service) for more details.)
-```
+```swift
 import AuthenticationServices
 
 class ContextProvider: NSObject, ASWebAuthenticationPresentationContextProviding {
@@ -81,13 +81,13 @@ class ContextProvider: NSObject, ASWebAuthenticationPresentationContextProviding
 }
 ```
 
-In the header of your SwiftUI view, store a strong reference to the ContextProvider:
-```
+In the header of your SwiftUI view, store a strong reference to the `ContextProvider`:
+```swift
 @State private var contextProvider = ContextProvider() // Store a strong reference
 ```
 
 Finally, inside your SwiftUI view, add the button and start the login process when it is tapped:
-```
+```swift
     LoginWithYouVersionButton() {
         YouVersionPlatform.login(
             contextProvider: contextProvider,
@@ -97,9 +97,9 @@ Finally, inside your SwiftUI view, add the button and start the login process wh
             switch result {
             case .success(let info):
                 print(info)
-                // The user is logged in and you have a LAT (a limited access token)!
-                // Now you can use the LAT in YouVersion Platform API calls.
-                // You should save the LAT locally so the user doesn't have to log in again next time.
+                // The user is logged in and you have an access token (AKA limited access token, or LAT)!
+                // Now you can use the access token in YouVersion Platform API calls.
+                // You should save the access token locally so the user doesn't have to log in again next time.
                 // You may examine the "permissions" parameter to see what the user approved;
                 // e.g. perhaps they didn't grant access for your app to see their highlights.
             case .failure(let error):
@@ -109,10 +109,10 @@ Finally, inside your SwiftUI view, add the button and start the login process wh
     }
 ```
 
-## How to fetch data for the logged-in user
+## Fetching data for the logged-in user
 
-Once you have a LAT (see above), you can use it like this:
-```
+Once you have an access token (see above), you can use it like this:
+```swift
 private func loadUI(accessToken: String) {
     Task {
         do {

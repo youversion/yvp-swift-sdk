@@ -30,19 +30,3 @@ public struct YouVersionUserInfo: Codable, Sendable {
         YouVersionUserInfo(firstName: "John", lastName: "Smith", userId: 12345, avatarUrlFormat: nil)
     }
 }
-
-public func userInfo(accessToken: String) async throws -> YouVersionUserInfo {
-    if accessToken == "preview" {
-        return YouVersionUserInfo.preview
-    }
-    
-    guard let url = URLBuilder.userURL(accessToken: accessToken) else {
-        throw URLError(.badURL)
-    }
-    
-    let (data, _) = try await URLSession.shared.data(from: url)
-    guard let decodedResponse = try? JSONDecoder().decode(YouVersionUserInfo.self, from: data) else {
-        throw URLError(.badServerResponse)
-    }
-    return decodedResponse
-}

@@ -31,8 +31,8 @@ public enum URLBuilder {
     
     static func authURL(
         appKey: String,
-        requiredPermissions: Set<YVPPermission> = [],
-        optionalPermissions: Set<YVPPermission> = []
+        requiredPermissions: Set<YouVersionPermission> = [],
+        optionalPermissions: Set<YouVersionPermission> = []
     ) -> URL? {
         var components = baseURLComponents
         components.path = "/auth/login"

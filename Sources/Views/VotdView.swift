@@ -46,7 +46,7 @@ public struct VotdView: View {
             }
             
             do {
-                votd = try await verseOfTheDay(versionId: 111)
+                votd = try await YouVersionAPI.verseOfTheDay(versionId: 111)
             } catch {
                 print("VotdView: error loading votd: \(error)")
             }

@@ -85,6 +85,10 @@ struct BibleVersionData: Decodable {
         case copyrightLong = "copyright_long"
         case books
     }
+    
+    func book(with usfm: String) -> BibleBook? {
+        books.first { $0.usfm == usfm }
+    }
 }
 
 struct BibleVersionResponse: Decodable {

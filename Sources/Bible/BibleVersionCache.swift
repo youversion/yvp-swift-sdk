@@ -68,8 +68,8 @@ enum BibleVersionCache {
     /// This probably is not a function that you want to call.
     /// Use `chapter(reference:)` since it'll also pull from the server if necessary.
     static func chapterFromCache(reference: BibleReference) -> YVDOMContent? {
-        guard let book = reference.bookUSFM,
-              let usfm = reference.chapterUSFM else {
+        let book = reference.bookUSFM
+        guard let usfm = reference.chapterUSFM else {
             return nil
         }
 
@@ -101,9 +101,7 @@ enum BibleVersionCache {
     }
 
     private static func chapterFromServer(reference: BibleReference) async -> YVDOMContent? {
-        guard let book = reference.bookUSFM else {
-            return nil
-        }
+        let book = reference.bookUSFM
 
         do {
             let content = try await BibleVersionAPIs.chapter(reference: reference)

@@ -147,27 +147,162 @@ func testChapterUSFM() {
     #expect(ref.chapterUSFM == "GEN.1")
 }
 
+// MARK: - Test Adjacent/Overlapping check
+
 @Test
-func testChapterUSFM_NilBook() {
-    var ref = BibleReference(versionId: 1, bookUSFM: "GEN", chapter: 1, verse: 1)
-    ref.bookUSFM = nil
-    #expect(ref.chapterUSFM == nil)
+func testAdjacent_individualVerses() {
+    let ref1 = BibleReference(versionId: 1, bookUSFM: "GEN", chapter: 1, verse: 3)
+    let ref2 = BibleReference(versionId: 1, bookUSFM: "GEN", chapter: 1, verse: 4)
+    
+    #expect(ref1.isAdjacentOrOverlapping(with: ref2))
+    #expect(ref2.isAdjacentOrOverlapping(with: ref1))  // order doesn't matter
 }
 
-// MARK: - Test Edge Cases
+@Test
+func testAdjacent_verseRangesNotOverlapping() {
+    // 1-3 contiguous with 4-6
+    let ref1 = BibleReference(versionId: 1, bookUSFM: "GEN", chapterStart: 1, verseStart: 1, chapterEnd: 1, verseEnd: 3)
+    let ref2 = BibleReference(versionId: 1, bookUSFM: "GEN", chapterStart: 1, verseStart: 4, chapterEnd: 1, verseEnd: 6)
+    
+    #expect(ref1.isAdjacentOrOverlapping(with: ref2))
+    #expect(ref2.isAdjacentOrOverlapping(with: ref1))
+}
 
 @Test
-func testCompare_NilBooks() {
-    var ref1 = BibleReference(versionId: 1, bookUSFM: "GEN", chapter: 1, verse: 1)
-    var ref2 = BibleReference(versionId: 1, bookUSFM: "GEN", chapter: 1, verse: 1)
+func testAdjacent_verseRangesOverlapping() {
+    // 1-3 contiguous with 4-6
+    let ref1 = BibleReference(versionId: 1, bookUSFM: "GEN", chapterStart: 1, verseStart: 1, chapterEnd: 1, verseEnd: 4)
+    let ref2 = BibleReference(versionId: 1, bookUSFM: "GEN", chapterStart: 1, verseStart: 3, chapterEnd: 1, verseEnd: 6)
     
-    ref1.bookUSFM = nil
-    ref2.bookUSFM = nil
+    #expect(ref1.isAdjacentOrOverlapping(with: ref2))
+    #expect(ref2.isAdjacentOrOverlapping(with: ref1))
+}
+
+@Test
+func testNotAdjacent_differentBook() {
+    let ref1 = BibleReference(versionId: 1, bookUSFM: "GEN", chapter: 1, verse: 1)
+    let ref2 = BibleReference(versionId: 1, bookUSFM: "EXO", chapter: 1, verse: 1)
     
-    // Two nil books should be considered equal
-    #expect(ref1 == ref2)
+    #expect(!ref1.isAdjacentOrOverlapping(with: ref2))
+    #expect(!ref2.isAdjacentOrOverlapping(with: ref1))
+}
+
+@Test
+func testNotAdjacent_differentChapter() {
+    let ref1 = BibleReference(versionId: 1, bookUSFM: "GEN", chapter: 1, verse: 3)
+    let ref2 = BibleReference(versionId: 1, bookUSFM: "GEN", chapter: 2, verse: 1)
     
-    // Nil book should be considered less than a non-nil book
-    ref2.bookUSFM = "GEN"
-    #expect(ref2 > ref1)
+    #expect(!ref1.isAdjacentOrOverlapping(with: ref2))
+    #expect(!ref2.isAdjacentOrOverlapping(with: ref1))
+}
+
+@Test
+func testNotAdjacent_verseGap() {
+    // 1-3 not contiguous with 5-6
+    let ref1 = BibleReference(versionId: 1, bookUSFM: "GEN", chapterStart: 1, verseStart: 1, chapterEnd: 1, verseEnd: 3)
+    let ref2 = BibleReference(versionId: 1, bookUSFM: "GEN", chapterStart: 1, verseStart: 5, chapterEnd: 1, verseEnd: 6)
+    
+    #expect(!ref1.isAdjacentOrOverlapping(with: ref2))
+    #expect(!ref2.isAdjacentOrOverlapping(with: ref1))
+}
+
+// MARK: - Test Merging references
+
+@Test
+func testMerge_adjacentReferences() {
+    let ref1 = BibleReference(versionId: 1, bookUSFM: "GEN", chapterStart: 1, verseStart: 1, chapterEnd: 1, verseEnd: 3)
+    let ref2 = BibleReference(versionId: 1, bookUSFM: "GEN", chapterStart: 1, verseStart: 4, chapterEnd: 1, verseEnd: 6)
+    
+    let merged1To2 = BibleReference.referenceByMerging(a: ref1, b: ref2)
+    #expect(merged1To2.versionId == 1)
+    #expect(merged1To2.bookUSFM == "GEN")
+    #expect(merged1To2.chapterStart == 1)
+    #expect(merged1To2.chapterEnd == 1)
+    #expect(merged1To2.verseStart == 1)
+    #expect(merged1To2.verseEnd == 6)
+    
+    // show that order does not matter
+    let merged2To1 = BibleReference.referenceByMerging(a: ref2, b: ref1)
+    #expect(merged2To1.versionId == 1)
+    #expect(merged2To1.bookUSFM == "GEN")
+    #expect(merged2To1.chapterStart == 1)
+    #expect(merged2To1.chapterEnd == 1)
+    #expect(merged2To1.verseStart == 1)
+    #expect(merged2To1.verseEnd == 6)
+}
+
+@Test
+func testMerge_overlappingReferences() {
+    let ref1 = BibleReference(versionId: 1, bookUSFM: "GEN", chapterStart: 1, verseStart: 3, chapterEnd: 1, verseEnd: 7)
+    let ref2 = BibleReference(versionId: 1, bookUSFM: "GEN", chapterStart: 1, verseStart: 5, chapterEnd: 1, verseEnd: 9)
+    
+    let merged1To2 = BibleReference.referenceByMerging(a: ref1, b: ref2)
+    #expect(merged1To2.versionId == 1)
+    #expect(merged1To2.bookUSFM == "GEN")
+    #expect(merged1To2.chapterStart == 1)
+    #expect(merged1To2.chapterEnd == 1)
+    #expect(merged1To2.verseStart == 3)
+    #expect(merged1To2.verseEnd == 9)
+    
+    // show that order does not matter
+    let merged2To1 = BibleReference.referenceByMerging(a: ref2, b: ref1)
+    #expect(merged2To1.versionId == 1)
+    #expect(merged2To1.bookUSFM == "GEN")
+    #expect(merged2To1.chapterStart == 1)
+    #expect(merged2To1.chapterEnd == 1)
+    #expect(merged2To1.verseStart == 3)
+    #expect(merged2To1.verseEnd == 9)
+}
+
+@Test
+func testMerge_oneReferenceContainsAnother() {
+    let ref1 = BibleReference(versionId: 1, bookUSFM: "GEN", chapterStart: 1, verseStart: 2, chapterEnd: 1, verseEnd: 10)
+    let ref2 = BibleReference(versionId: 1, bookUSFM: "GEN", chapterStart: 1, verseStart: 5, chapterEnd: 1, verseEnd: 7)
+    
+    let merged1To2 = BibleReference.referenceByMerging(a: ref1, b: ref2)
+    #expect(merged1To2.versionId == 1)
+    #expect(merged1To2.bookUSFM == "GEN")
+    #expect(merged1To2.chapterStart == 1)
+    #expect(merged1To2.chapterEnd == 1)
+    #expect(merged1To2.verseStart == 2)
+    #expect(merged1To2.verseEnd == 10)
+    
+    // show that order does not matter
+    let merged2To1 = BibleReference.referenceByMerging(a: ref2, b: ref1)
+    #expect(merged2To1.versionId == 1)
+    #expect(merged2To1.bookUSFM == "GEN")
+    #expect(merged2To1.chapterStart == 1)
+    #expect(merged2To1.chapterEnd == 1)
+    #expect(merged2To1.verseStart == 2)
+    #expect(merged2To1.verseEnd == 10)
+}
+
+@Test
+func mergeMultipleGroupsOfReferences() throws {
+    let ref1 = BibleReference(versionId: 1, bookUSFM: "JHN", chapterStart: 4, verseStart: 2, chapterEnd: 4, verseEnd: 10)
+    let ref2 = BibleReference(versionId: 1, bookUSFM: "JHN", chapterStart: 2, verseStart: 5, chapterEnd: 2, verseEnd: 7)
+    let ref3 = BibleReference(versionId: 1, bookUSFM: "JHN", chapterStart: 4, verseStart: 5, chapterEnd: 4, verseEnd: 12)
+    let ref4 = BibleReference(versionId: 1, bookUSFM: "JHN", chapterStart: 2, verseStart: 8, chapterEnd: 2, verseEnd: 11)
+    let ref5 = BibleReference(versionId: 1, bookUSFM: "JHN", chapterStart: 1, verseStart: 5, chapterEnd: 1, verseEnd: 7)
+    
+    let result = BibleReference.referencesByMerging(references: [ref1, ref2, ref3, ref4, ref5])
+    #expect(result.count == 3)
+    
+    let singleChapter1 = try #require(result.first { $0.chapterStart == 1 })
+    #expect(singleChapter1.chapterStart == 1)
+    #expect(singleChapter1.chapterEnd == 1)
+    #expect(singleChapter1.verseStart == 5)
+    #expect(singleChapter1.verseEnd == 7)
+    
+    let mergedChapter2 = try #require(result.first { $0.chapterStart == 2 })
+    #expect(mergedChapter2.chapterStart == 2)
+    #expect(mergedChapter2.chapterEnd == 2)
+    #expect(mergedChapter2.verseStart == 5)
+    #expect(mergedChapter2.verseEnd == 11)
+    
+    let mergedChapter4 = try #require(result.first { $0.chapterStart == 4 })
+    #expect(mergedChapter4.chapterStart == 4)
+    #expect(mergedChapter4.chapterEnd == 4)
+    #expect(mergedChapter4.verseStart == 2)
+    #expect(mergedChapter4.verseEnd == 12)
 }

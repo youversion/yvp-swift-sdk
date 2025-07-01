@@ -50,27 +50,17 @@ public class BibleVersion: ObservableObject {
         }
     }
 
-    // MARK: - Misc
-
-    public func isValidUSFMBookName(_ name: String) -> String? {
-        guard let metadata else {
-            return nil
-        }
-        let usfm = name.uppercased()
-        for usfmCode in metadata.books.map(\.usfm) where usfmCode == usfm {
-            return usfmCode
-        }
-        return nil
+    public func isBookUSFMValid(_ usfm: String) -> Bool {
+        let usfmUpper = usfm.uppercased()
+        return metadata?.books.contains(where: { $0.usfm == usfmUpper }) == true
     }
 
     // Example: "https://www.bible.com/bible/111/1SA.3.10.NIV"
     public func shareUrl(reference: BibleReference) -> URL? {
         let prefix = "https://www.bible.com/bible/\(id)/"
         var urlString = ""
-
-        guard let book = reference.bookUSFM else {
-            return nil
-        }
+        let book = reference.bookUSFM
+        
         if reference.isRange {
             urlString = "\(prefix)\(book).\(reference.chapterStart).\(reference.verseStart)-\(reference.verseEnd).\(abbreviation ?? String(id))"
         } else {
@@ -152,147 +142,51 @@ public class BibleVersion: ObservableObject {
         }
     }
 
-    // MARK: - Operations
-
-    private func isContiguousWith(_ first: BibleReference, other: BibleReference) -> Bool {
-        if first.bookUSFM != other.bookUSFM {
-            return false
-        }
-        if first.bookUSFM == nil {
-            return false
-        }
-        let a, b: BibleReference
-        if BibleReference.compare(a: first, b: other) < 0 {
-            a = first
-            b = other
-        } else {
-            a = other
-            b = first
-        }
-
-        // previously, here, we merged across chapter boundaries.
-        // we can't do that without knowing the # of verses in the chapter in this version.
-        // we don't have that info (well, not yet, not easily).
-
-        if a.chapterEnd < b.chapterStart {
-            return false
-        }
-        if a.chapterEnd > b.chapterStart {
-            return true
-        }
-        if (a.verseEnd + 1) < b.verseStart {
-            return false
-        }
-        return true
-    }
-
-    public func mergeOverlapping(references: [BibleReference]) -> [BibleReference] {
-        var tmp = references
-        tmp.sort()
-        var i = 1
-        while i < tmp.count {
-            if isContiguousWith(tmp[i - 1], other: tmp[i]) {
-                tmp[i - 1] = fromOverlappingPair(a: tmp[i - 1], b: tmp[i])
-                tmp.remove(at: i)
-            } else {
-                i += 1
-            }
-        }
-        return tmp
-    }
-
-    nonisolated private func fromOverlappingPair(a: BibleReference, b: BibleReference) -> BibleReference {
-        let x, y: BibleReference
-        guard a.bookUSFM == b.bookUSFM, a.bookUSFM != nil else {  // this shouldn't ever happen; fail in a reasonable way.
-            return a
-        }
-        if BibleReference.compare(a: a, b: b) > 0 {
-            x = b
-            y = a
-        } else {
-            x = a
-            y = b
-        }
-        var further: BibleReference
-        if x.chapterEnd > y.chapterEnd {
-            further = x
-        } else if x.chapterEnd < y.chapterEnd {
-            further = y
-        } else if x.verseEnd > y.verseEnd {
-            further = x
-        } else {
-            further = y
-        }
-        return BibleReference(versionId: x.versionId, bookUSFM: x.bookUSFM!, chapterStart: x.chapterStart, verseStart: x.verseStart, chapterEnd: further.chapterEnd, verseEnd: further.verseEnd)
-    }
-
     // MARK: - Simple Accessors
 
     /// e.g. "KJV". Meant to be user-visible.
     public var abbreviation: String? {
-        if let versionData = BibleVersionCache.metadataIfCached(versionId: id),
-           let abbreviation = versionData.localizedAbbreviation {
-            return abbreviation
-        }
-        return nil
+        let version = BibleVersionCache.metadataIfCached(versionId: id)
+        return version?.localizedAbbreviation
     }
 
     public var copyrightLong: String? {
-        if let versionData = BibleVersionCache.metadataIfCached(versionId: id),
-           let str = versionData.copyrightLong {
-            return str.text
-        }
-        return nil
+        let version = BibleVersionCache.metadataIfCached(versionId: id)
+        return version?.copyrightLong?.text
     }
 
     public var copyrightShort: String? {
-        if let versionData = BibleVersionCache.metadataIfCached(versionId: id),
-           let str = versionData.copyrightShort {
-            return str.text
-        }
-        return nil
+        let version = BibleVersionCache.metadataIfCached(versionId: id)
+        return version?.copyrightShort?.text
     }
 
-    public var bookCodes: [String] {
+    public var bookUSFMs: [String] {
         metadata?.books.compactMap { $0.usfm } ?? []
     }
 
-    public func bookName(_ book: String?) -> String? {
-        guard let metadata, let book else {
+    public func bookName(_ bookUSFM: String) -> String? {
+        guard let book = metadata?.book(with: bookUSFM) else {
             return nil
         }
-        for b in metadata.books where b.usfm == book {
-            return b.human ?? b.humanLong
-        }
-        return nil
+        return book.human ?? book.humanLong
     }
 
     /// If metadata hasn't yet been loaded, or if the book code is bad, this will return 0.
-    public func numberOfChaptersInBook(_ bookCode: String?) -> Int {
-        guard let metadata, let bookCode else {
+    public func numberOfChaptersInBook(_ bookUSFM: String) -> Int {
+        guard let book = metadata?.book(with: bookUSFM) else {
             return 0
         }
-        for b in metadata.books where b.usfm == bookCode {
-            if let chapters = b.chapters {
-                return chapters.reduce(0) { $0 + ($1.isCanonical == true ? 1 : 0) }
-            }
-        }
-        return 0
+        return book.chapters?.filter { $0.isCanonical == true }.count ?? 0
     }
 
-    /// Returns an array of human-visible labels for chapters.
+    /// Returns an array of displayable labels for chapters.
     /// In standard English books, this'll be like ["1", "2"...] but other cases exist.
     /// If metadata hasn't yet been loaded, or if the book code is bad, this will return []
-    public func chapterLabels(_ bookCode: String) -> [String] {
-        guard let metadata else {
+    public func chapterLabels(_ bookUSFM: String) -> [String] {
+        guard let book = metadata?.book(with: bookUSFM) else {
             return []
         }
-        for b in metadata.books where b.usfm == bookCode {
-            if let chapters = b.chapters {
-                return chapters.compactMap { ($0.isCanonical == true) ? $0.human : nil }
-            }
-        }
-        return []
+        return book.chapters?.filter({ $0.isCanonical == true }).compactMap { $0.human } ?? []
     }
 
 }

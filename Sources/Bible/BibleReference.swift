@@ -2,7 +2,7 @@ import Foundation
 
 public struct BibleReference: Comparable, Codable, Hashable {
     public let versionId: Int
-    public var bookUSFM: String?
+    public let bookUSFM: String
     public let chapterStart: Int
     public let chapterEnd: Int
     public let verseStart: Int
@@ -44,7 +44,7 @@ public struct BibleReference: Comparable, Codable, Hashable {
             }
             return (a.chapterStart < b.chapterStart) ? -1 : 1
         }
-        return (a.bookUSFM ?? "" < b.bookUSFM ?? "") ? -1 : 1
+        return (a.bookUSFM < b.bookUSFM) ? -1 : 1
     }
     
     public static func < (lhs: BibleReference, rhs: BibleReference) -> Bool {
@@ -52,10 +52,65 @@ public struct BibleReference: Comparable, Codable, Hashable {
     }
 
     public var chapterUSFM: String? {
-        guard let bookUSFM else {
-            return nil
-        }
-        return "\(bookUSFM.uppercased()).\(chapterStart)"
+        "\(bookUSFM.uppercased()).\(chapterStart)"
     }
     
+    public func isAdjacentOrOverlapping(with otherReference: BibleReference) -> Bool {
+        guard versionId == otherReference.versionId && bookUSFM == otherReference.bookUSFM else {
+            return false
+        }
+        
+        let a = min(self, otherReference)
+        let b = max(self, otherReference)
+        
+        if a.chapterEnd < b.chapterStart {
+            return false
+        } else if a.chapterEnd > b.chapterStart {
+            return true
+        } else {
+            return a.verseEnd + 1 >= b.verseStart
+        }
+    }
+    
+    public static func referencesByMerging(references: [BibleReference]) -> [BibleReference] {
+        var tmp = references
+        tmp.sort()
+        var i = 1
+        while i < tmp.count {
+            let previousReference = tmp[i - 1]
+            let currentReference = tmp[i]
+            if previousReference.isAdjacentOrOverlapping(with: currentReference) {
+                tmp[i - 1] = referenceByMerging(a: previousReference, b: currentReference)
+                tmp.remove(at: i)
+            } else {
+                i += 1
+            }
+        }
+        return tmp
+    }
+    
+    public static func referenceByMerging(a: BibleReference, b: BibleReference) -> BibleReference {
+        assert(a.isAdjacentOrOverlapping(with: b), "This function requires the two references to be adjacent or overlapping.")
+        
+        let minReference = min(a, b)
+        let maxReference = max(a, b)
+        
+        let further = if minReference.chapterEnd > maxReference.chapterEnd {
+            minReference
+        } else if minReference.chapterEnd < maxReference.chapterEnd {
+            maxReference
+        } else if minReference.verseEnd > maxReference.verseEnd {
+            minReference
+        } else {
+            maxReference
+        }
+        return BibleReference(
+            versionId: minReference.versionId,
+            bookUSFM: minReference.bookUSFM,
+            chapterStart: minReference.chapterStart,
+            verseStart: minReference.verseStart,
+            chapterEnd: further.chapterEnd,
+            verseEnd: further.verseEnd
+        )
+    }
 }

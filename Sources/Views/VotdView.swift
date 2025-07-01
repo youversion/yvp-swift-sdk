@@ -68,18 +68,18 @@ public struct VotdView: View {
     
     private func text(votd: YouVersionVerseOfTheDay) -> some View {
         VStack(alignment: .leading) {
-            Text("\(votd.reference) (\(votd.abbreviation ?? ""))")
+            Text("\(votd.reference) (\(votd.abbreviation))")
                 .font(.title.bold())
                 .lineLimit(1)
                 .padding(.bottom, 16)
-            Text(votd.text ?? "")
+            Text(votd.text)
                 .multilineTextAlignment(.leading)
                 .font(.system(size: 24, design: .serif))
                 .minimumScaleFactor(0.5)
                 .lineLimit(lineLimit)
                 .textSelection(.enabled)
                 .padding(.bottom, 16)
-            Text(votd.copyright ?? "")
+            Text(votd.copyright)
                 .font(.caption)
                 .minimumScaleFactor(0.1)
         }

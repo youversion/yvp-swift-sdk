@@ -16,16 +16,16 @@ extension BibleVersion {
         let subUSFMs = trimmedUSFM.split(separator: "+")
         if subUSFMs.count > 1 {
             let refs = subUSFMs.compactMap { reference(with: String($0)) }
-            let merged = mergeOverlapping(references: refs.compactMap { $0 })
+            let merged = BibleReference.referencesByMerging(references: refs.compactMap { $0 })
             return merged.first
         }
-
-        if var reference = unvalidatedReference(with: usfm), let validBook = isValidUSFMBookName(reference.bookUSFM ?? "") {
-            reference.bookUSFM = validBook
-            return reference
+        
+        guard let reference = unvalidatedReference(with: usfm),
+              isBookUSFMValid(reference.bookUSFM) else {
+            return nil
         }
+        return reference
         // TODO: check that the chapter and verse numbers are valid for this version.
-        return nil
     }
 
     /// Most people should call `reference(with:)`. This function skips all validation and only handles the simple case.
@@ -41,7 +41,7 @@ extension BibleVersion {
                 if (c == c2) && (v > v2) {
                     return nil
                 }
-                return BibleReference(versionId: id, bookUSFM: String(bText), chapterStart: c, verseStart: v, chapterEnd: c2, verseEnd: v2)
+                return BibleReference(versionId: id, bookUSFM: String(bText.uppercased()), chapterStart: c, verseStart: v, chapterEnd: c2, verseEnd: v2)
             }
             return nil
         }
@@ -62,7 +62,7 @@ extension BibleVersion {
                 if (c == c2) && (v > v2) {
                     return nil
                 }
-                return BibleReference(versionId: id, bookUSFM: String(bText), chapterStart: c, verseStart: v, chapterEnd: c2, verseEnd: v2)
+                return BibleReference(versionId: id, bookUSFM: String(bText.uppercased()), chapterStart: c, verseStart: v, chapterEnd: c2, verseEnd: v2)
             }
             return nil
         }
@@ -74,7 +74,7 @@ extension BibleVersion {
                 if v > v2 {
                     return nil
                 }
-                return BibleReference(versionId: id, bookUSFM: String(bText), chapterStart: c, verseStart: v, chapterEnd: c, verseEnd: v2)
+                return BibleReference(versionId: id, bookUSFM: String(bText.uppercased()), chapterStart: c, verseStart: v, chapterEnd: c, verseEnd: v2)
             }
             return nil
         }
@@ -83,7 +83,7 @@ extension BibleVersion {
         if let match = usfm.wholeMatch(of: patBCV) {
             let (_, bText, cText, vText) = match.output
             if let c = Int(cText), let v = Int(vText) {
-                return BibleReference(versionId: id, bookUSFM: String(bText), chapter: c, verse: v)
+                return BibleReference(versionId: id, bookUSFM: String(bText.uppercased()), chapter: c, verse: v)
             }
             return nil
         }
@@ -92,7 +92,7 @@ extension BibleVersion {
         if let match = usfm.wholeMatch(of: patBC) {
             let (_, bText, cText) = match.output
             if let c = Int(cText) {
-                return BibleReference(versionId: id, bookUSFM: String(bText), chapter: c, verse: 0)
+                return BibleReference(versionId: id, bookUSFM: String(bText.uppercased()), chapter: c, verse: 0)
             }
             return nil
         }
@@ -104,7 +104,7 @@ extension BibleVersion {
                 if c > c2 {
                     return nil
                 }
-                return BibleReference(versionId: id, bookUSFM: String(bText), chapterStart: c, verseStart: 0, chapterEnd: c2, verseEnd: 0)
+                return BibleReference(versionId: id, bookUSFM: String(bText.uppercased()), chapterStart: c, verseStart: 0, chapterEnd: c2, verseEnd: 0)
             }
             return nil
         }

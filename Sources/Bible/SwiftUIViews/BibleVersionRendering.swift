@@ -33,9 +33,7 @@ struct BibleVersionRendering {
     ) async -> [BibleTextBlock] {
         // The normal textBlocks() is sync, so it won't fetch from the server.
         // So, ensure that every chapter needed is available. This warms the cache up!
-        guard let book = reference.bookUSFM else {
-            return []
-        }
+        let book = reference.bookUSFM
         var c = reference.chapterStart
         while c <= reference.chapterEnd {
             let chapterRef = BibleReference(versionId: reference.versionId, bookUSFM: book, chapter: c, verse: 1)
@@ -67,9 +65,7 @@ struct BibleVersionRendering {
         fonts: BibleTextFonts,
         uiFonts: BibleTextUIFonts
     ) -> [BibleTextBlock] {
-        guard let book = reference.bookUSFM else {
-            return []
-        }
+        let book = reference.bookUSFM
         var ret: [BibleTextBlock] = []
         var c = reference.chapterStart
         var v = reference.verseStart

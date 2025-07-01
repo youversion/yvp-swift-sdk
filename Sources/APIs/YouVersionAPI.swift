@@ -64,10 +64,6 @@ public enum YouVersionAPI {
     }
     
     public static func verseOfTheDay(versionId: Int = 1) async throws -> YouVersionVerseOfTheDay {
-        guard let appKey = YouVersionPlatformConfiguration.appKey else {
-            preconditionFailure("YouVersionPlatformConfiguration.appKey must be set.")
-        }
-
         guard let url = URLBuilder.votdURL(versionId: versionId) else {
             throw URLError(.badURL)
         }

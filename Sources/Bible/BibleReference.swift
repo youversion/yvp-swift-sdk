@@ -9,6 +9,9 @@ public struct BibleReference: Comparable, Codable, Hashable {
     public let verseEnd: Int
 
     public init(versionId: Int, bookUSFM: String, chapter: Int, verse: Int) {
+        assert(chapter >= 1, "Chapter must be greater than or equal to 1.")
+        assert(verse >= 1, "Verse must be greater than or equal to 1.")
+        
         self.versionId = versionId
         self.bookUSFM = bookUSFM
         self.chapterStart = chapter
@@ -18,6 +21,15 @@ public struct BibleReference: Comparable, Codable, Hashable {
     }
     
     public init(versionId: Int, bookUSFM: String, chapterStart: Int, verseStart: Int, chapterEnd: Int, verseEnd: Int) {
+        assert(chapterStart >= 1, "Starting chapter must be greater than or equal to 1.")
+        assert(verseStart >= 1, "Starting verse must be greater than or equal to 1.")
+        assert(chapterEnd >= 1, "Ending chapter must be greater than or equal to 1.")
+        assert(verseEnd >= 1, "Ending verse must be greater than or equal to 1.")
+        assert(chapterEnd >= chapterStart, "Ending chapter must be equal to or after starting chapter.")
+        if chapterStart == chapterEnd {
+            assert(verseEnd >= verseStart, "Ending verse must be equal to or after starting verse.")
+        }
+        
         self.versionId = versionId
         self.bookUSFM = bookUSFM
         self.chapterStart = chapterStart

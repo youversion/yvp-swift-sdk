@@ -9,6 +9,8 @@ public class BibleVersion: ObservableObject {
 
     // MARK: - Init and loading
     public init(_ id: Int) {
+        assert(id > 0, "Version identifier must be greater than zero.")
+        
         self.id = id
         if let m = BibleVersionCache.metadataIfCached(versionId: id) {
             self.metadata = m

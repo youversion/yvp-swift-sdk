@@ -12,7 +12,7 @@ public extension BibleVersion {
     }
     
     var bookUSFMs: [String] {
-        books.compactMap { $0.usfm } ?? []
+        books.compactMap { $0.usfm }
     }
 
     func bookName(_ bookUSFM: String) -> String? {
@@ -22,7 +22,7 @@ public extension BibleVersion {
         return book.human ?? book.humanLong
     }
     
-    public func reference(with usfm: String) -> BibleReference? {
+    func reference(with usfm: String) -> BibleReference? {
         let trimmedUSFM = usfm.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
         guard trimmedUSFM.count >= 3 else {
             return nil
@@ -45,7 +45,7 @@ public extension BibleVersion {
     }
     
     /// If metadata hasn't yet been loaded, or if the book code is bad, this will return 0.
-    public func numberOfChaptersInBook(_ bookUSFM: String) -> Int {
+    func numberOfChaptersInBook(_ bookUSFM: String) -> Int {
         guard let book = book(with: bookUSFM) else {
             return 0
         }
@@ -55,7 +55,7 @@ public extension BibleVersion {
     /// Returns an array of displayable labels for chapters.
     /// In standard English books, this'll be like ["1", "2"...] but other cases exist.
     /// If metadata hasn't yet been loaded, or if the book code is bad, this will return []
-    public func chapterLabels(_ bookUSFM: String) -> [String] {
+    func chapterLabels(_ bookUSFM: String) -> [String] {
         guard let book = book(with: bookUSFM) else {
             return []
         }
@@ -63,10 +63,10 @@ public extension BibleVersion {
     }
     
     // Example: "https://www.bible.com/bible/111/1SA.3.10.NIV"
-    public func shareUrl(reference: BibleReference) -> URL? {
+    func shareUrl(reference: BibleReference) -> URL? {
         let prefix = "https://www.bible.com/bible/\(id)/"
         let book = reference.bookUSFM
-        let version = localizedAbbreviation ?? abbreviation ?? String(id ?? 0)
+        let version = localizedAbbreviation ?? abbreviation ?? String(id)
         
         let urlString = if reference.isRange {
             "\(prefix)\(book).\(reference.chapterStart).\(reference.verseStart)-\(reference.verseEnd).\(version)"
@@ -77,7 +77,7 @@ public extension BibleVersion {
         return URL(string: urlString)
     }
     
-    public func displayTitle(for reference: BibleReference, includesVersionAbbreviation: Bool = true) -> String {
+    func displayTitle(for reference: BibleReference, includesVersionAbbreviation: Bool = true) -> String {
         var referenceOnlyChunks = titleChunks(for: reference)
         let isRTL = language?.textDirection == "rtl"
         if isRTL {

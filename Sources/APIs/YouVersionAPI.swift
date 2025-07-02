@@ -79,7 +79,7 @@ public enum YouVersionAPI {
     
     public static func highlightsForChapter(
         usfm: String,
-        version: BibleVersion,
+        versionId: Int,
         accessToken: String
     ) async throws -> [BibleHighlight] {
         if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
@@ -90,7 +90,7 @@ public enum YouVersionAPI {
             preconditionFailure("YouVersionPlatformConfiguration.appKey must be set.")
         }
         
-        guard let url = URLBuilder.highlightsURL(usfm: usfm, versionId: version.id, accessToken: accessToken) else {
+        guard let url = URLBuilder.highlightsURL(usfm: usfm, versionId: versionId, accessToken: accessToken) else {
             throw URLError(.badURL)
         }
         
@@ -126,9 +126,9 @@ public enum YouVersionAPI {
             }
         }
         
-        func highlight(from response: BibleHighlightResponse, version: BibleVersion) -> BibleHighlight? {
+        func highlight(from response: BibleHighlightResponse, versionId: Int) -> BibleHighlight? {
             guard let usfm = response.usfm,
-                  let reference = BibleReference.unvalidatedReference(with: usfm, versionId: version.id) else {
+                  let reference = BibleReference.unvalidatedReference(with: usfm, versionId: versionId) else {
                 return nil
             }
             return BibleHighlight(
@@ -142,6 +142,6 @@ public enum YouVersionAPI {
         guard let decodedResponse = try? JSONDecoder().decode(BibleHighlightsResponseList.self, from: data) else {
             throw URLError(.badServerResponse)
         }
-        return decodedResponse.highlights.compactMap { highlight(from: $0, version: version) }
+        return decodedResponse.highlights.compactMap { highlight(from: $0, versionId: versionId) }
     }
 }

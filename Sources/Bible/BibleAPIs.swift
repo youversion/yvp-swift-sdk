@@ -8,7 +8,7 @@ enum BibleVersionAPIError: Error {
     case invalidResponse
 }
 
-enum BibleVersionAPIs {
+enum BibleAPIs {
     // MARK: - Version Metadata
 
     /// Fetches version metadata from the server

@@ -11,9 +11,9 @@ enum BibleVersionCache {
     }
 
     private static let chaptersCache = ThreadSafeDictionary<String, YVDOMContent>()
-    private static let versionsCache = ThreadSafeDictionary<Int, BibleVersionData>()
-
-    static func metadataIfCached(versionId: Int) -> BibleVersionData? {
+    private static let versionsCache = ThreadSafeDictionary<Int, BibleVersion>()
+    
+    static func metadataIfCached(versionId: Int) -> BibleVersion? {
         if let v = versionsCache[versionId] {
             return v
         }
@@ -30,13 +30,13 @@ enum BibleVersionCache {
         return nil
     }
 
-    static func metadataFromServer(versionId: Int) async throws -> BibleVersionData {
+    static func metadataFromServer(versionId: Int) async throws -> BibleVersion {
         if let version = metadataIfCached(versionId: versionId) {
             return version
         }
 
         do {
-            let data = try await BibleVersionAPIs.metadata(versionId: versionId)
+            let data = try await BibleAPIs.metadata(versionId: versionId)
 
             let versionObject = try JSONDecoder().decode(BibleVersionObject.self, from: data)
             let metadata = versionObject.response.data
@@ -104,7 +104,7 @@ enum BibleVersionCache {
         let book = reference.bookUSFM
 
         do {
-            let content = try await BibleVersionAPIs.chapter(reference: reference)
+            let content = try await BibleAPIs.chapter(reference: reference)
             let cacheKey = "\(reference.versionId).\(book).\(reference.chapterStart)"
             chaptersCache[cacheKey] = content
             writeChapterToCache(reference: reference, content: content)

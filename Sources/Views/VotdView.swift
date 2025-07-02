@@ -37,7 +37,6 @@ public struct VotdView: View {
                     )
             } else {
                 ProgressView()
-                    .scaleEffect(2)
             }
         }
         .task {

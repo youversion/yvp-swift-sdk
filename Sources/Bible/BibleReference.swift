@@ -125,4 +125,81 @@ public struct BibleReference: Comparable, Codable, Hashable {
             verseEnd: further.verseEnd
         )
     }
+    
+    static func unvalidatedReference(with usfm: String, versionId: Int) -> BibleReference? {
+        func reference(bookUSFM: String, chapterStart: Int, verseStart: Int, chapterEnd: Int, verseEnd: Int) -> BibleReference? {
+            if chapterStart > chapterEnd {
+                return nil
+            }
+            if (chapterStart == chapterEnd) && (verseStart > verseEnd) {
+                return nil
+            }
+            return BibleReference(versionId: versionId, bookUSFM: bookUSFM, chapterStart: chapterStart, verseStart: verseStart, chapterEnd: chapterEnd, verseEnd: verseEnd)
+        }
+        
+        // GEN.1.3-1.5
+        let patBCVCV = /(\w\w\w)\.(\d+)\.(\d+)-(\d+)\.(\d+)/
+        if let match = usfm.wholeMatch(of: patBCVCV) {
+            let (_, bText, cText, vText, c2Text, v2Text) = match.output
+            if let c = Int(cText), let v = Int(vText), let c2 = Int(c2Text), let v2 = Int(v2Text) {
+                return reference(bookUSFM: bText.uppercased(), chapterStart: c, verseStart: v, chapterEnd: c2, verseEnd: v2)
+            }
+            return nil
+        }
+        
+        // GEN.1.3-GEN.1.5
+        let patBCVBCV = /(\w\w\w)\.(\d+)\.(\d+)-(\w\w\w)\.(\d+)\.(\d+)/
+        if let match = usfm.wholeMatch(of: patBCVBCV) {
+            let (_, bText, cText, vText, b2Text, c2Text, v2Text) = match.output
+            if let c = Int(cText), let v = Int(vText), let c2 = Int(c2Text), let v2 = Int(v2Text) {
+                if String(bText) != String(b2Text) {
+                    return nil
+                }
+                return reference(bookUSFM: bText.uppercased(), chapterStart: c, verseStart: v, chapterEnd: c2, verseEnd: v2)
+            }
+            return nil
+        }
+        
+        // GEN.1.3-5
+        let patBCVV = /(\w\w\w)\.(\d+)\.(\d+)-(\d+)/
+        if let match = usfm.wholeMatch(of: patBCVV) {
+            let (_, bText, cText, vText, v2Text) = match.output
+            if let c = Int(cText), let v = Int(vText), let v2 = Int(v2Text) {
+                return reference(bookUSFM: bText.uppercased(), chapterStart: c, verseStart: v, chapterEnd: c, verseEnd: v2)
+            }
+            return nil
+        }
+        
+        // GEN.1.3
+        let patBCV = /(\w\w\w)\.(\d+)\.(\d+)/
+        if let match = usfm.wholeMatch(of: patBCV) {
+            let (_, bText, cText, vText) = match.output
+            if let c = Int(cText), let v = Int(vText) {
+                return reference(bookUSFM: bText.uppercased(), chapterStart: c, verseStart: v, chapterEnd: c, verseEnd: v)
+            }
+            return nil
+        }
+        
+        // GEN.1
+        let patBC = /(\w\w\w)\.(\d+)/
+        if let match = usfm.wholeMatch(of: patBC) {
+            let (_, bText, cText) = match.output
+            if let c = Int(cText) {
+                return reference(bookUSFM: bText.uppercased(), chapterStart: c, verseStart: 1, chapterEnd: c, verseEnd: 1)
+            }
+            return nil
+        }
+        
+        // GEN.1-2
+        let patBCC = /(\w\w\w)\.(\d+)-(\d+)/
+        if let match = usfm.wholeMatch(of: patBCC) {
+            let (_, bText, cText, c2Text) = match.output
+            if let c = Int(cText), let c2 = Int(c2Text) {
+                return reference(bookUSFM: bText.uppercased(), chapterStart: c, verseStart: 1, chapterEnd: c2, verseEnd: 1)
+            }
+            return nil
+        }
+        
+        return nil
+    }
 }

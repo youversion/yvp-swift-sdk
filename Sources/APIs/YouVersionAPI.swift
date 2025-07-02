@@ -127,7 +127,8 @@ public enum YouVersionAPI {
         }
         
         func highlight(from response: BibleHighlightResponse, version: BibleVersion) -> BibleHighlight? {
-            guard let usfm = response.usfm, let reference = version.unvalidatedReference(with: usfm) else {
+            guard let usfm = response.usfm,
+                  let reference = BibleReference.unvalidatedReference(with: usfm, versionId: version.id) else {
                 return nil
             }
             return BibleHighlight(

@@ -27,6 +27,6 @@ let package = Package(
                 .product(name: "SwiftProtobuf", package: "swift-protobuf")
             ]
         ),
-        .testTarget(name: "YouVersionPlatformTests", dependencies: ["YouVersionPlatform"]),
+        .testTarget(name: "YouVersionPlatformTests", dependencies: ["YouVersionPlatform"], resources: [.process("Fixtures/bible_206.json")]),
     ]
 )

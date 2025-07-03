@@ -1,18 +1,18 @@
 import Foundation
 
-public struct BibleTextAndHTML: Decodable, Sendable {
+public struct BibleTextAndHTML: Codable, Sendable {
     public let text: String?
     public let html: String?
 }
 
-public struct BiblePublisher: Decodable, Sendable {
+public struct BiblePublisher: Codable, Sendable {
     public let id: Int?
     public let name: String?
     public let description: String?
     public let url: String?
 }
 
-public struct BibleBookChapter: Decodable, Sendable {
+public struct BibleBookChapter: Codable, Sendable {
     public let isCanonical: Bool?
     public let human: String?
     
@@ -22,7 +22,7 @@ public struct BibleBookChapter: Decodable, Sendable {
     }
 }
 
-public struct BibleBook: Decodable, Sendable {
+public struct BibleBook: Codable, Sendable {
     public let usfm: String?
     public let abbreviation: String?
     public let human: String?
@@ -35,12 +35,12 @@ public struct BibleBook: Decodable, Sendable {
     }
 }
 
-public struct BibleBuild: Decodable, Sendable {
+public struct BibleBuild: Codable, Sendable {
     public let min: Int?
     public let max: Int?
 }
 
-public struct BibleLanguage: Decodable, Sendable {
+public struct BibleLanguage: Codable, Sendable {
     public let localName: String?
     public let name: String?
     public let textDirection: String?
@@ -52,11 +52,11 @@ public struct BibleLanguage: Decodable, Sendable {
     }
 }
 
-public struct BibleOffline: Decodable, Sendable {
+public struct BibleOffline: Codable, Sendable {
     public let build: BibleBuild?
 }
 
-public struct BibleVersion: Decodable, Sendable {
+public struct BibleVersion: Codable, Sendable {
     public let id: Int
     public let localizedTitle: String?
     public let localizedAbbreviation: String?
@@ -84,10 +84,10 @@ public struct BibleVersion: Decodable, Sendable {
     }
 }
 
-struct BibleVersionResponse: Decodable {
+struct BibleVersionResponse: Codable {
     let data: BibleVersion
 }
 
-struct BibleVersionObject: Decodable {
+struct BibleVersionObject: Codable {
   let response: BibleVersionResponse
 }

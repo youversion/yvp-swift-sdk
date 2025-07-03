@@ -8,6 +8,8 @@ enum BibleVersionAPIError: Error {
     case invalidResponse
 }
 
+typealias BibleChapterContent = Youversion_Red_Biblecontent_Api_Model_Youversion_ApiContent
+
 enum BibleAPIs {
     // MARK: - Version Metadata
 
@@ -22,7 +24,7 @@ enum BibleAPIs {
         }
         
         var request = URLRequest(url: url)
-        request.setValue(appKey, forHTTPHeaderField: "X-API-Key")
+        request.setValue(appKey, forHTTPHeaderField: "X-App-Id")
 
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse else {
@@ -46,7 +48,7 @@ enum BibleAPIs {
     // MARK: - Chapter Content
 
     /// Fetches a single chapter's content from the server
-    static func chapter(reference: BibleReference) async throws -> YVDOMContent {
+    static func chapter(reference: BibleReference) async throws -> BibleChapterContent {
         guard let appKey = YouVersionPlatformConfiguration.appKey else {
             preconditionFailure("YouVersionPlatformConfiguration.appKey must be set.")
         }
@@ -60,7 +62,7 @@ enum BibleAPIs {
         }
 
         var request = URLRequest(url: url)
-        request.setValue(appKey, forHTTPHeaderField: "X-API-Key")
+        request.setValue(appKey, forHTTPHeaderField: "X-App-Id")
 
         let (data, response) = try await URLSession.shared.data(for: request)
         // TODO: investigate how iOS's caching might confuse our server-side chapter fetch logic.
@@ -103,7 +105,7 @@ enum BibleAPIs {
         }
 
         var request = URLRequest(url: url)
-        request.setValue(appKey, forHTTPHeaderField: "X-API-Key")
+        request.setValue(appKey, forHTTPHeaderField: "X-App-Id")
 
         let (data, response) = try await URLSession.shared.data(for: request)
 

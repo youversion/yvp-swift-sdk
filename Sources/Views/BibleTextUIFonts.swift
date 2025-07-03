@@ -1,18 +1,18 @@
 import UIKit
 
 public struct BibleTextUIFonts {
-    public var textFont: UIFont
-    public var textFontItalic: UIFont
-    public var verseNumFont: UIFont
-    public var verseNumBaselineOffset: CGFloat
-    public var verseNumOpacity: CGFloat = 1
-    public var smallCaps: UIFont
-    public var header: UIFont
-    public var headerItalic: UIFont
-    public var header2: UIFont
-    public var header3: UIFont
-    public var header4: UIFont
-    public var footnote: UIFont
+    public let textFont: UIFont
+    public let textFontItalic: UIFont
+    public let verseNumFont: UIFont
+    public let verseNumBaselineOffset: CGFloat
+    public let verseNumOpacity: CGFloat = 1
+    public let smallCaps: UIFont
+    public let header: UIFont
+    public let headerItalic: UIFont
+    public let header2: UIFont
+    public let header3: UIFont
+    public let header4: UIFont
+    public let footnote: UIFont
 
     public init(familyName: String, baseSize: CGFloat = UIFont.preferredFont(forTextStyle: .body).pointSize) {
         let baseFont = UIFont(name: familyName, size: baseSize)! //?? UIFont.systemFont(ofSize: baseSize)

@@ -266,21 +266,21 @@ public enum BibleTextFootnoteMode {
 }
 
 public struct BibleTextOptions {
-    public var fontFamily: String
-    public var fontSize: CGFloat
-    public var lineSpacing: CGFloat?
-    public var paragraphSpacing: CGFloat?
-    public var textColor: Color?
-    public var wocColor = Color(red: 1, green: 0x3d / 256, blue: 0x4d / 256)  // YouVersion red. F04C59 in dark mode.
-    public var footnoteMode: BibleTextFootnoteMode = .none
-    public var footnoteMarker: DoubleAttributedString?
+    public let fontFamily: String
+    public let fontSize: CGFloat
+    public let lineSpacing: CGFloat?
+    public let paragraphSpacing: CGFloat?
+    public let textColor: Color?
+    public let wocColor: Color
+    public let footnoteMode: BibleTextFootnoteMode
+    public let footnoteMarker: DoubleAttributedString?
 
     public init(fontFamily: String = "Times New Roman",
                 fontSize: CGFloat = 16,
                 lineSpacing: CGFloat? = nil,
                 paragraphSpacing: CGFloat? = nil,
                 textColor: Color? = nil,
-                wocColor: Color = Color(red: 1, green: 0x3d / 256, blue: 0x4d / 256),
+                wocColor: Color = Color(red: 1, green: 0x3d / 256, blue: 0x4d / 256),   // YouVersion red. F04C59 in dark mode.
                 footnoteMode: BibleTextFootnoteMode = .none,
                 footnoteMarker: DoubleAttributedString? = nil) {
         self.fontFamily = fontFamily

@@ -46,4 +46,40 @@ struct BibleVersionTests {
         let actual = BibleVersionTests.version.numberOfChaptersInBook(bookUSFM)
         #expect(actual == expectedNumber)
     }
+    
+    @Test
+    func displayTitleSingleVerseWithAbbreviation() {
+        let reference = BibleReference(versionId: 206, bookUSFM: "GEN", chapter: 3, verse: 1)
+        #expect(BibleVersionTests.version.displayTitle(for: reference) == "Genesis 3:1 WEBUS")
+    }
+    
+    @Test
+    func displayTitleSingleVerseWithoutAbbreviation() {
+        let reference = BibleReference(versionId: 206, bookUSFM: "GEN", chapter: 3, verse: 1)
+        #expect(BibleVersionTests.version.displayTitle(for: reference, includesVersionAbbreviation: false) == "Genesis 3:1")
+    }
+    
+    @Test
+    func displayTitleVerseRangeWithAbbreviation() {
+        let reference = BibleReference(versionId: 206, bookUSFM: "GEN", chapter: 3, verseStart: 4, verseEnd: 6)
+        #expect(BibleVersionTests.version.displayTitle(for: reference) == "Genesis 3:4-6 WEBUS")
+    }
+    
+    @Test
+    func displayTitleVerseRangeWithoutAbbreviation() {
+        let reference = BibleReference(versionId: 206, bookUSFM: "GEN", chapter: 3, verseStart: 4, verseEnd: 6)
+        #expect(BibleVersionTests.version.displayTitle(for: reference, includesVersionAbbreviation: false) == "Genesis 3:4-6")
+    }
+    
+    @Test
+    func displayTitleChapterWithAbbreviation() {
+        let reference = BibleReference(versionId: 206, bookUSFM: "GEN", chapter: 3)
+        #expect(BibleVersionTests.version.displayTitle(for: reference) == "Genesis 3 WEBUS")
+    }
+    
+    @Test
+    func displayTitleChapterWithoutAbbreviation() {
+        let reference = BibleReference(versionId: 206, bookUSFM: "GEN", chapter: 3)
+        #expect(BibleVersionTests.version.displayTitle(for: reference, includesVersionAbbreviation: false) == "Genesis 3")
+    }
 }

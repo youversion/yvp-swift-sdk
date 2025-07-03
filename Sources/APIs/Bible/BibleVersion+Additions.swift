@@ -68,10 +68,14 @@ public extension BibleVersion {
         let book = reference.bookUSFM
         let version = localizedAbbreviation ?? abbreviation ?? String(id)
         
-        let urlString = if reference.isRange {
-            "\(prefix)\(book).\(reference.chapterStart).\(reference.verseStart)-\(reference.verseEnd).\(version)"
+        let urlString = if let verseStart = reference.verseStart {
+            if let verseEnd = reference.verseEnd {
+                "\(prefix)\(book).\(reference.chapter).\(verseStart)-\(verseEnd).\(version)"
+            } else {
+                "\(prefix)\(book).\(reference.chapter).\(verseStart).\(version)"
+            }
         } else {
-            "\(prefix)\(book).\(reference.chapterStart).\(reference.verseStart).\(version)"
+            "\(prefix)\(book).\(reference.chapter).\(version)"
         }
 
         return URL(string: urlString)
@@ -96,53 +100,35 @@ public extension BibleVersion {
     }
 
     private func titleChunks(for reference: BibleReference) -> [String] {
-        // for convenience:
-        let b = reference.bookUSFM
-        let c = reference.chapterStart
-        let v = reference.verseStart
-        let c2 = reference.chapterEnd
-        let v2 = reference.verseEnd
+        let bookUSFM = reference.bookUSFM
+        let bookName = bookName(bookUSFM) ?? ""
+        
+        let hasOneChapter = numberOfChaptersInBook(bookUSFM) == 1
+        let chapterSeparator = hasOneChapter ? " " : ":"
+        let bookAndChapterSeparator = hasOneChapter ? "" : " "
+        let chapter = hasOneChapter ? "" : String(reference.chapter)
 
-        let bcPart1 = bookName(b) ?? ""
-        let bcPart2: String
-        let bcPart3: String
-        var csep = ":"
-
-        if numberOfChaptersInBook(b) == 1 {
-            csep = " "
-            bcPart2 = ""
-            bcPart3 = ""
-        } else {
-            bcPart2 = " "
-            bcPart3 = String(c)
-        }
-        if (v == 0) ||
-            ((v <= 1) && (v2 == 0)) {  // previously, we also looked here at numVersesIn c2, to merge. Removed for now.
-            if c == c2 {
-                return [bcPart1, bcPart2, bcPart3]
+        switch (reference.verseStart, reference.verseEnd) {
+        case (_, let verseEnd?) where verseEnd == 999:
+            // Whole chapter
+            return [bookName, bookAndChapterSeparator, chapter]
+            
+        case (nil, _):
+            // Whole chapter
+            return [bookName, bookAndChapterSeparator, chapter]
+            
+        case let (verseStart?, verseEnd?):
+            if verseStart == verseEnd {
+                // Single verse
+                return [bookName, bookAndChapterSeparator, chapter, chapterSeparator, String(verseStart)]
+            } else {
+                // Verse range
+                return [bookName, bookAndChapterSeparator, chapter, chapterSeparator, String(verseStart), "-", String(verseEnd)]
             }
-            return [bcPart1, bcPart2, bcPart3, "-", String(c2)]
-        } else if c != c2 {
-            var vNotZero = v
-            if vNotZero == 0 {
-                vNotZero = 1
-            }
-            var v2NotZero = v2
-            if v2NotZero == 0 {
-                v2NotZero = 999  // TODO fix this hack. Previously, this set it to: numVersesIn(b: b, c: c2)
-            }
-            return [bcPart1, bcPart2, bcPart3, csep, String(vNotZero), "-", String(c2), csep, String(v2NotZero)]
-        } else {
-            if v2 == 999 {
-                return [bcPart1, bcPart2, bcPart3, csep, String(v), "-"]
-            }
-            if reference.isRange {
-                return [bcPart1, bcPart2, bcPart3, csep, String(v), "-", String(v2)]
-            }
-            if v != 0 {
-                return [bcPart1, bcPart2, bcPart3, csep, String(v)]
-            }
-            return [bcPart1, bcPart2, bcPart3]
+            
+        case let (verseStart?, nil):
+            // Single verse with no verseEnd
+            return [bookName, bookAndChapterSeparator, chapter, chapterSeparator, String(verseStart)]
         }
     }
 }

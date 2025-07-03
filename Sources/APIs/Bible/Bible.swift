@@ -12,7 +12,19 @@ typealias BibleChapterContent = Youversion_Red_Biblecontent_Api_Model_Youversion
 public extension YouVersionAPI {
     enum Bible {
         
-        /// Fetches version metadata from the server
+        /// Retrieves metadata for a specific Bible version from the server.
+        ///
+        /// This function fetches metadata for the Bible version identified by `versionId`.
+        /// The request requires a valid `YouVersionPlatformConfiguration.appKey` to be set.
+        ///
+        /// - Parameter versionId: The identifier of the Bible version to fetch metadata for.
+        /// - Returns: The raw `Data` containing the version metadata.
+        ///
+        /// - Throws:
+        ///   - `URLError` if the URL is invalid.
+        ///   - `BibleVersionAPIError.notPermitted` if the app key is invalid or lacks permission.
+        ///   - `BibleVersionAPIError.cannotDownload` if the server returns an error response.
+        ///   - `BibleVersionAPIError.invalidResponse` if the server response is not valid.
         static func metadata(versionId: Int) async throws -> Data {
             guard let appKey = YouVersionPlatformConfiguration.appKey else {
                 preconditionFailure("YouVersionPlatformConfiguration.appKey must be set.")
@@ -46,7 +58,20 @@ public extension YouVersionAPI {
 
         // MARK: - Chapter Content
 
-        /// Fetches a single chapter's content from the server
+        /// Fetches the content of a single Bible chapter from the server.
+        ///
+        /// This function retrieves the content of the chapter specified in the provided ``BibleReference``.
+        /// A valid `YouVersionPlatformConfiguration.appKey` must be set for the request to succeed.
+        ///
+        /// - Parameter reference: The ``BibleReference`` specifying the version and chapter to fetch.
+        /// - Returns: A ``BibleChapterContent`` object containing the chapter's structured content.
+        ///
+        /// - Throws:
+        ///   - `BibleVersionAPIError.invalidDownload` if the ``BibleReference`` does not contain a valid chapter.
+        ///   - `URLError` if the URL is invalid.
+        ///   - `BibleVersionAPIError.notPermitted` if the app key is invalid or lacks permission.
+        ///   - `BibleVersionAPIError.cannotDownload` if the server returns an error response.
+        ///   - `BibleVersionAPIError.invalidResponse` if the server response is not valid.
         static func chapter(reference: BibleReference) async throws -> BibleChapterContent {
             guard let appKey = YouVersionPlatformConfiguration.appKey else {
                 preconditionFailure("YouVersionPlatformConfiguration.appKey must be set.")
@@ -64,8 +89,6 @@ public extension YouVersionAPI {
             request.setValue(appKey, forHTTPHeaderField: "X-App-Id")
 
             let (data, response) = try await URLSession.shared.data(for: request)
-            // TODO: investigate how iOS's caching might confuse our server-side chapter fetch logic.
-            // These fetches are cached by iOS by default. Which is good, but, less control.
 
             guard let httpResponse = response as? HTTPURLResponse else {
                 print("unexpected response type")
@@ -87,8 +110,20 @@ public extension YouVersionAPI {
         }
 
         // MARK: - Version Discovery
-
-        /// Finds Bible versions by language code
+        
+        /// Retrieves a list of Bible versions available for a specified language code.
+        ///
+        /// This function fetches Bible version overviews for the provided three-letter language code (e.g., `"eng"`).
+        /// A valid `YouVersionPlatformConfiguration.appKey` must be set for the request to succeed.
+        ///
+        /// - Parameter languageTag: An optional three-letter language code for filtering available Bible versions. If `nil` or invalid, the function returns an empty list.
+        /// - Returns: An array of ``BibleVersionOverview`` objects representing the available Bible versions for the language.
+        ///
+        /// - Throws:
+        ///   - `URLError` if the URL is invalid.
+        ///   - `BibleVersionAPIError.notPermitted` if the app key is invalid or lacks permission.
+        ///   - `BibleVersionAPIError.cannotDownload` if the server returns an error response.
+        ///   - `BibleVersionAPIError.invalidResponse` if the server response is not valid.
         static func versions(forLanguageTag languageTag: String? = nil) async throws -> [BibleVersionOverview] {
             guard let appKey = YouVersionPlatformConfiguration.appKey else {
                 preconditionFailure("YouVersionPlatformConfiguration.appKey must be set.")

@@ -4,6 +4,19 @@ import Foundation
 public extension YouVersionAPI {
     enum Users {
         
+        /// Presents the YouVersion login flow to the user and returns the login result upon completion.
+        ///
+        /// This function uses `ASWebAuthenticationSession` to authenticate the user with YouVersion, requesting the specified required and optional permissions.
+        /// The function suspends until the user completes or cancels the login flow, returning the login result containing the authorization code and granted permissions.
+        ///
+        /// - Parameters:
+        ///   - requiredPermissions: The set of permissions that must be granted by the user for successful login.
+        ///   - optionalPermissions: The set of permissions that will be requested from the user but are not required for successful login.
+        ///   - contextProvider: The presentation context provider used for presenting the authentication session.
+        ///
+        /// - Returns: A ``YouVersionLoginResult`` containing the authorization code and granted permissions upon successful login.
+        ///
+        /// - Throws: An error if authentication fails or is cancelled by the user.
         @MainActor
         public static func logIn(
             requiredPermissions: Set<YouVersionPermission>,
@@ -48,6 +61,16 @@ public extension YouVersionAPI {
             }
         }
         
+        /// Retrieves user information for the authenticated user using the provided access token.
+        ///
+        /// This function fetches the user's profile information from the YouVersion API, decoding it into a ``YouVersionUserInfo`` model.
+        /// If `"preview"` is provided as the access token, a preview user info object will be returned for development or testing purposes.
+        ///
+        /// - Parameter accessToken: The access token obtained from the login process, or `"preview"` for test data.
+        ///
+        /// - Returns: A ``YouVersionUserInfo`` object containing the user's profile information.
+        ///
+        /// - Throws: An error if the URL is invalid, the network request fails, or the response cannot be decoded.
         public static func userInfo(accessToken: String) async throws -> YouVersionUserInfo {
             if accessToken == "preview" {
                 return YouVersionUserInfo.preview

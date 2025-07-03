@@ -14,7 +14,7 @@ public final class VersionClient: BibleVersionAPIClient {
     public init() {}
     
     public func version(withId id: Int) async throws -> BibleVersion {
-        let rawData = try await BibleAPIs.metadata(versionId: id)
+        let rawData = try await YouVersionAPI.Bible.metadata(versionId: id)
         let versionObject = try JSONDecoder().decode(BibleVersionObject.self, from: rawData)
         return versionObject.response.data
     }

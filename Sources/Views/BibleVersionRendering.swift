@@ -589,7 +589,7 @@ public final class DoubleAttributedString: Equatable, Hashable {
     }
 
     static func +(lhs: DoubleAttributedString, rhs: DoubleAttributedString) -> DoubleAttributedString { //swiftlint:disable:this operator_whitespace
-        var result = DoubleAttributedString()
+        let result = DoubleAttributedString()
         result.one = NSMutableAttributedString(attributedString: lhs.one)
         result.one.append(rhs.one)
         result.two = lhs.two + rhs.two

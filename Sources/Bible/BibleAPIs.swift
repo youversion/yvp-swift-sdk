@@ -22,7 +22,7 @@ enum BibleAPIs {
         }
         
         var request = URLRequest(url: url)
-        request.setValue(appKey, forHTTPHeaderField: "apikey")
+        request.setValue(appKey, forHTTPHeaderField: "X-API-Key")
 
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse else {
@@ -60,7 +60,7 @@ enum BibleAPIs {
         }
 
         var request = URLRequest(url: url)
-        request.setValue(appKey, forHTTPHeaderField: "apikey")
+        request.setValue(appKey, forHTTPHeaderField: "X-API-Key")
 
         let (data, response) = try await URLSession.shared.data(for: request)
         // TODO: investigate how iOS's caching might confuse our server-side chapter fetch logic.
@@ -103,7 +103,7 @@ enum BibleAPIs {
         }
 
         var request = URLRequest(url: url)
-        request.setValue(appKey, forHTTPHeaderField: "apikey")
+        request.setValue(appKey, forHTTPHeaderField: "X-API-Key")
 
         let (data, response) = try await URLSession.shared.data(for: request)
 

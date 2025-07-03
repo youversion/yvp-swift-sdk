@@ -1,6 +1,6 @@
 import Foundation
 
-public struct BibleReference: Comparable, Codable, Hashable {
+public struct BibleReference: Comparable, Codable, Hashable, Sendable {
     public let versionId: Int
     public let bookUSFM: String
     public let chapterStart: Int

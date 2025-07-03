@@ -1,18 +1,18 @@
 import SwiftUI
 
-struct BibleVersionRendering {
+@MainActor
+enum BibleVersionRendering {
 
-    public static func plainTextOf(_ reference: BibleReference) -> String {
+    public static func plainTextOf(_ reference: BibleReference) async -> String {
         // the fonts aren't used in this case, but are required.
         let familyName = "Times New Roman"
-        let uiFonts = BibleTextUIFonts(familyName: familyName)
-        let blocks = textBlocks(
+        let blocks = await textBlocks(
             reference,
             renderVerseNumbers: false,
             renderHeadlines: false,
             renderFootnotes: false,
             fonts: BibleTextFonts(familyName: familyName),
-            uiFonts: uiFonts
+            uiFonts: BibleTextUIFonts(familyName: familyName)
         )
 
         return blocks.map { String($0.text.characters) }.joined(separator: "\n")
@@ -20,41 +20,6 @@ struct BibleVersionRendering {
 
     // If not all chapters are available, this returns an empty array.
     // Marked as @MainActor due to NSMutableAttributedStrings in BibleTextBlocks.
-    @MainActor
-    static func textBlocksAsync(
-        _ reference: BibleReference,
-        renderVerseNumbers: Bool = true,
-        renderHeadlines: Bool = true,
-        renderFootnotes: Bool = false,
-        footnoteMarker: DoubleAttributedString? = nil,
-        wocColor: Color = Color.red,
-        fonts: BibleTextFonts,
-        uiFonts: BibleTextUIFonts
-    ) async -> [BibleTextBlock] {
-        // The normal textBlocks() is sync, so it won't fetch from the server.
-        // So, ensure that every chapter needed is available. This warms the cache up!
-        let book = reference.bookUSFM
-        var c = reference.chapterStart
-        while c <= reference.chapterEnd {
-            let chapterRef = BibleReference(versionId: reference.versionId, bookUSFM: book, chapter: c, verse: 1)
-            let data = await BibleVersionCache.chapter(reference: chapterRef)
-            if data == nil {
-                return []
-            }
-            c += 1
-        }
-        return textBlocks(
-            reference,
-            renderVerseNumbers: renderVerseNumbers,
-            renderHeadlines: renderHeadlines,
-            renderFootnotes: renderFootnotes,
-            footnoteMarker: footnoteMarker,
-            wocColor: wocColor,
-            fonts: fonts,
-            uiFonts: uiFonts
-        )
-    }
-    
     static func textBlocks(
         _ reference: BibleReference,
         renderVerseNumbers: Bool = true,
@@ -64,10 +29,20 @@ struct BibleVersionRendering {
         wocColor: Color = Color.red,
         fonts: BibleTextFonts,
         uiFonts: BibleTextUIFonts
-    ) -> [BibleTextBlock] {
+    ) async -> [BibleTextBlock] {
         let book = reference.bookUSFM
-        var ret: [BibleTextBlock] = []
         var c = reference.chapterStart
+        while c <= reference.chapterEnd {
+            let chapterRef = BibleReference(versionId: reference.versionId, bookUSFM: book, chapter: c, verse: 1)
+            let data = try? await BibleChapterRepository.shared.chapter(withReference: chapterRef)
+            if data == nil {
+                return []
+            }
+            c += 1
+        }
+        
+        var ret: [BibleTextBlock] = []
+        c = reference.chapterStart
         var v = reference.verseStart
         var v2 = reference.verseEnd
         while c <= reference.chapterEnd {
@@ -77,7 +52,7 @@ struct BibleVersionRendering {
                 v2 = 999
             }
             let chapterRef = BibleReference(versionId: reference.versionId, bookUSFM: book, chapter: c, verse: 1)
-            if let data = BibleVersionCache.chapterFromCache(reference: chapterRef) {
+            if let data = try? await BibleChapterRepository.shared.cachedChapter(withReference: chapterRef) {
                 let doubleFonts = DoubleBibleTextFonts(one: uiFonts, two: fonts)
                 let marker = footnoteMarker
                 if marker != nil {
@@ -599,7 +574,7 @@ struct BibleVersionRendering {
 
 }
 
-public class DoubleAttributedString: Equatable, Hashable {
+public final class DoubleAttributedString: Equatable, Hashable {
     var one: NSMutableAttributedString
     var two: AttributedString
 
@@ -614,7 +589,7 @@ public class DoubleAttributedString: Equatable, Hashable {
     }
 
     static func +(lhs: DoubleAttributedString, rhs: DoubleAttributedString) -> DoubleAttributedString { //swiftlint:disable:this operator_whitespace
-        let result = DoubleAttributedString()
+        var result = DoubleAttributedString()
         result.one = NSMutableAttributedString(attributedString: lhs.one)
         result.one.append(rhs.one)
         result.two = lhs.two + rhs.two

@@ -47,7 +47,7 @@ public struct BibleTextView: View {
     }
     
     private func loadBlocks() async {
-        blocks = await BibleVersionRendering.textBlocksAsync(
+        blocks = await BibleVersionRendering.textBlocks(
             reference,
             renderFootnotes: options.footnoteMode != .none,
             footnoteMarker: options.footnoteMarker,

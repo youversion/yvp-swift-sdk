@@ -69,7 +69,7 @@ public enum YouVersionAPI {
         }
 
         var request = URLRequest(url: url)
-        request.setValue(YouVersionPlatformConfiguration.appKey, forHTTPHeaderField: "X-API-Key")
+        request.setValue(YouVersionPlatformConfiguration.appKey, forHTTPHeaderField: "X-App-Id")
         let (data, _) = try await URLSession.shared.data(for: request)
         guard let decodedResponse = try? JSONDecoder().decode(YouVersionVerseOfTheDay.self, from: data) else {
             throw URLError(.badServerResponse)
@@ -95,7 +95,7 @@ public enum YouVersionAPI {
         }
         
         var request = URLRequest(url: url)
-        request.setValue(appKey, forHTTPHeaderField: "X-API-Key")
+        request.setValue(appKey, forHTTPHeaderField: "X-App-Id")
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let httpResponse: HTTPURLResponse = response as? HTTPURLResponse else {
             print("highlightsForChapter: unexpected response type")

@@ -5,9 +5,9 @@ public protocol BibleVersionAPIClient: Sendable {
     func version(withId id: Int) async throws -> BibleVersion
 }
 
-public protocol BibleVersionDiskCache: Sendable {
+public protocol BibleVersionCaching: Sendable {
     func version(withId id: Int) async -> BibleVersion?
-    func setVersion(_ version: BibleVersion) async
+    func addVersion(_ version: BibleVersion) async
 }
 
 public final class VersionClient: BibleVersionAPIClient {
@@ -20,7 +20,7 @@ public final class VersionClient: BibleVersionAPIClient {
     }
 }
 
-public actor VersionCache: BibleVersionDiskCache {
+public actor VersionMemoryCache: BibleVersionCaching {
     public init() {}
     
     private var cache: [Int: BibleVersion] = [:]
@@ -29,26 +29,53 @@ public actor VersionCache: BibleVersionDiskCache {
         cache[id]
     }
     
-    public func setVersion(_ version: BibleVersion) async {
+    public func addVersion(_ version: BibleVersion) async {
         cache[version.id] = version
+    }
+}
+
+public actor VersionDiskCache: BibleVersionCaching {
+    public init() {}
+    
+    static func urlForCachedVersion(_ versionId: Int) -> URL {
+        let cachesDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+        return cachesDirectory.appendingPathComponent("bible_\(versionId)")
+    }
+    
+    public func version(withId id: Int) -> BibleVersion? {
+        let url = VersionDiskCache.urlForCachedVersion(id)
+        guard let data = try? Data(contentsOf: url) else {
+            return nil
+        }
+        return try? JSONDecoder().decode(BibleVersion.self, from: data)
+    }
+    
+    public func addVersion(_ version: BibleVersion) async {
+        let url = VersionDiskCache.urlForCachedVersion(version.id)
+        if let data = try? JSONEncoder().encode(version) {
+            try? data.write(to: url, options: .atomic)
+        }
     }
 }
 
 public actor BibleVersionRepository: ObservableObject {
 
-    private let apiClient: BibleVersionAPIClient
-    private let diskCache: BibleVersionDiskCache
+    private let apiClient = VersionClient()
+    private let memoryCache: BibleVersionCaching = VersionMemoryCache()
+    private let diskCache: BibleVersionCaching = VersionDiskCache()
     
     private var inFlightTasks: [Int: Task<BibleVersion, Error>] = [:]
     
-    public init(apiClient: BibleVersionAPIClient, diskCache: BibleVersionDiskCache) {
-        self.apiClient = apiClient
-        self.diskCache = diskCache
-    }
+    public init() {}
     
     public func version(withId id: Int) async throws -> BibleVersion {
-        // Check cache first
+        // Check caches first
+        if let cached = await memoryCache.version(withId: id) {
+            return cached
+        }
+        
         if let cached = await diskCache.version(withId: id) {
+            await memoryCache.addVersion(cached)
             return cached
         }
         
@@ -60,18 +87,19 @@ public actor BibleVersionRepository: ObservableObject {
         // Otherwise, create a new fetch task
         let task = Task { [apiClient, diskCache] in
             let version = try await apiClient.version(withId: id)
-            await diskCache.setVersion(version)
+            await diskCache.addVersion(version)
             return version
         }
         
         inFlightTasks[id] = task
         
-        defer { inFlightTasks[id] = nil }
+        defer {
+            inFlightTasks[id] = nil
+        }
         
-        return try await task.value
+        let version = try await task.value
+        await memoryCache.addVersion(version)
+        await diskCache.addVersion(version)
+        return version
     }
-    
-//    func loadFixture(_ testFixture) {
-//        
-//    }
 }

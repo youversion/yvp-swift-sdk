@@ -131,6 +131,8 @@ Finally, inside your SwiftUI view, add the button and start the login process wh
     }
 ```
 
+You'll need to store the user's access token to make some API calls, preferably in the keychain. Deleting or losing the access token is the same as "logging out". 
+
 ## Fetching data for the logged-in user
 
 Once you have an access token (see above), you can use it like this:

@@ -8,7 +8,7 @@ struct SampleApp: App {
     @State private var selectedTab = 0
     
     init() {
-        YouVersionPlatform.configure(appKey: "LTpIbDNdtAkcGo6GVAg0EWVECyKZiNTRMrfwZ4kGuACUza1w")
+        YouVersionPlatform.configure(appKey: <#Your App Key#>)
     }
     
     var body: some Scene {

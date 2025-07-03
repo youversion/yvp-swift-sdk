@@ -1,15 +1,21 @@
 # yvp-swift-sdk
 
-## Getting started
+## Getting Started
 
 1. Register your app with YouVersion Platform, and acquire an app key.
-2. In your Xcode project, on the File menu, choose "Add Package Dependencies".
+2. In your Xcode project, in the File menu, choose "Add Package Dependencies".
 3. Type `https://github.com/youversion/yvp-swift-sdk.git` into the search field.
 4. Select `yvp-swift-sdk` from the search results.
 5. For the "Dependency Rule", select `Up to Next Major Version`. (Or, if you're in YOLO mode, `Branch` and then `main`.)
 6. Ensure your project is selected next to `Add to Project`.
 7. Click `Add Package`.
 8. On the Package Products dialog, add `YouVersionPlatform` to your target and click `Add Package`.
+
+## Sample App
+
+For a quick start, open the sample app located in the Examples directory. It has examples of several different ways to use the SDK.
+
+Opening the SDK directory in Xcode allows you to run the unit tests easily.
 
 ## Displaying Scripture in SwiftUI
 
@@ -25,7 +31,7 @@ struct yourApp: App {
     var body: some Scene {...
 ```
 
-And now to display a single verse or verse range, this is all it takes:
+And now to display a single verse, this is all it takes:
 ```swift
 import YouVersionPlatform
 
@@ -38,7 +44,33 @@ struct DemoView: View {
 }
 ```
 
-If you're displaying a longer passage of Scripture than a single verse, 
+Display a verse range:
+```swift
+import YouVersionPlatform
+
+struct DemoView: View {
+    var body: some View {
+        BibleTextView(
+            BibleReference(versionId: 111, bookUSFM: "JHN", chapter: 3, verseStart: 16, verseEnd: 20)
+        )
+    }
+}
+```
+
+Or display a full chapter:
+```swift
+import YouVersionPlatform
+
+struct DemoView: View {
+    var body: some View {
+        BibleTextView(
+            BibleReference(versionId: 111, bookUSFM: "JHN", chapter: 3)
+        )
+    }
+}
+```
+
+Note: If you're displaying a longer passage of Scripture than a single verse, 
 you should wrap `BibleTextView` inside a normal SwiftUI `ScrollView`.
 
 ### In case you're interested:

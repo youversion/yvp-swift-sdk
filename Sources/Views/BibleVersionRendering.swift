@@ -31,67 +31,55 @@ enum BibleVersionRendering {
         uiFonts: BibleTextUIFonts
     ) async -> [BibleTextBlock] {
         let book = reference.bookUSFM
-        var c = reference.chapterStart
-        while c <= reference.chapterEnd {
-            let chapterRef = BibleReference(versionId: reference.versionId, bookUSFM: book, chapter: c, verse: 1)
-            let data = try? await BibleChapterRepository.shared.chapter(withReference: chapterRef)
-            if data == nil {
-                return []
-            }
-            c += 1
+        let c = reference.chapter
+        let chapterRef = BibleReference(versionId: reference.versionId, bookUSFM: book, chapter: c, verse: 1)
+        let data = try? await BibleChapterRepository.shared.chapter(withReference: chapterRef)
+        if data == nil {
+            return []
         }
         
         var ret: [BibleTextBlock] = []
-        c = reference.chapterStart
-        var v = reference.verseStart
-        var v2 = reference.verseEnd
-        while c <= reference.chapterEnd {
-            if c == reference.chapterEnd && reference.verseEnd > 0 {
-                v2 = reference.verseEnd
-            } else {
-                v2 = 999
+        let verseStart = reference.verseStart ?? 1
+        let verseEnd = reference.verseEnd ?? 999
+        
+        if let data = try? await BibleChapterRepository.shared.cachedChapter(withReference: chapterRef) {
+            let doubleFonts = DoubleBibleTextFonts(one: uiFonts, two: fonts)
+            let marker = footnoteMarker
+            if marker != nil {
+                marker!.setFont(DoubleFont(one: doubleFonts.one.footnote, two: doubleFonts.two.footnote))
             }
-            let chapterRef = BibleReference(versionId: reference.versionId, bookUSFM: book, chapter: c, verse: 1)
-            if let data = try? await BibleChapterRepository.shared.cachedChapter(withReference: chapterRef) {
-                let doubleFonts = DoubleBibleTextFonts(one: uiFonts, two: fonts)
-                let marker = footnoteMarker
-                if marker != nil {
-                    marker!.setFont(DoubleFont(one: doubleFonts.one.footnote, two: doubleFonts.two.footnote))
-                }
-                let stateIn = StateIn(
-                    fromVerse: v,
-                    toVerse: v2,
-                    renderVerseNumbers: renderVerseNumbers,
-                    renderHeadlines: renderHeadlines,
-                    renderFootnotes: renderFootnotes,
-                    footnoteMarker: marker,
-                    wocColor: wocColor,
-                    fonts: doubleFonts
-                )
-                let stateDown = StateDown(
-                    woc: false,
-                    smallcaps: false,
-                    alignment: .leading,
-                    currentFont: DoubleFont(one: stateIn.fonts.one.textFont, two: stateIn.fonts.two.textFont)
-                )
-                var stateUp = StateUp(
-                    rendering: (c == reference.chapterStart && reference.verseStart <= 1),
-                    lineIsEmpty: true,
-                    firstLineHeadIndent: 0,
-                    headIndent: 0,
-                    chapter: c,
-                    verse: 0
-                )
-                
-                handleNodeBlock(
-                    node: data.root,
-                    stateIn: stateIn, stateDown: stateDown, stateUp: &stateUp,
-                    ret: &ret
-                )
-            }
-            c += 1
-            v = 0
+            let stateIn = StateIn(
+                fromVerse: verseStart,
+                toVerse: verseEnd,
+                renderVerseNumbers: renderVerseNumbers,
+                renderHeadlines: renderHeadlines,
+                renderFootnotes: renderFootnotes,
+                footnoteMarker: marker,
+                wocColor: wocColor,
+                fonts: doubleFonts
+            )
+            let stateDown = StateDown(
+                woc: false,
+                smallcaps: false,
+                alignment: .leading,
+                currentFont: DoubleFont(one: stateIn.fonts.one.textFont, two: stateIn.fonts.two.textFont)
+            )
+            var stateUp = StateUp(
+                rendering: verseStart <= 1,
+                lineIsEmpty: true,
+                firstLineHeadIndent: 0,
+                headIndent: 0,
+                chapter: c,
+                verse: 0
+            )
+            
+            handleNodeBlock(
+                node: data.root,
+                stateIn: stateIn, stateDown: stateDown, stateUp: &stateUp,
+                ret: &ret
+            )
         }
+        
         return ret
     }
 

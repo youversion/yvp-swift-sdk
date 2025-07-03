@@ -54,13 +54,14 @@ public enum YouVersionAPI {
         
         func highlight(from response: BibleHighlightResponse, versionId: Int) -> BibleHighlight? {
             guard let usfm = response.usfm,
-                  let reference = BibleReference.unvalidatedReference(with: usfm, versionId: versionId) else {
+                  let reference = BibleReference.unvalidatedReference(with: usfm, versionId: versionId),
+                  let firstVerse = reference.verseStart else {
                 return nil
             }
             return BibleHighlight(
                 versionId: response.versionId ?? 0,
-                chapter: reference.chapterStart,
-                verse: reference.verseStart,
+                chapter: reference.chapter,
+                verse: firstVerse,
                 color: response.color ?? "#FFF9B1"
             )
         }

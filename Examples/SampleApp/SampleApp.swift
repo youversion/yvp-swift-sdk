@@ -2,13 +2,13 @@ import SwiftUI
 import YouVersionPlatform
 
 @main
-struct PlatformSDKTestApp: App {
+struct SampleApp: App {
     
     @StateObject private var repository = BibleVersionRepository()
     @State private var selectedTab = 0
     
     init() {
-        YouVersionPlatform.configure(appKey: <#YOUR APP KEY#>)
+        YouVersionPlatform.configure(appKey: "LTpIbDNdtAkcGo6GVAg0EWVECyKZiNTRMrfwZ4kGuACUza1w")
     }
     
     var body: some Scene {

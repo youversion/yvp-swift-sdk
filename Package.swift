@@ -14,7 +14,6 @@ let package = Package(
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
-        .package(url: "https://github.com/ZipArchive/ZipArchive.git", .upToNextMajor(from: "2.5.5")),
         .package(url: "https://github.com/apple/swift-protobuf.git", .upToNextMajor(from: "1.26.0")),
     ],
     targets: [
@@ -23,7 +22,6 @@ let package = Package(
         .target(
             name: "YouVersionPlatform",
             dependencies: [
-                .product(name: "ZipArchive", package: "ZipArchive"),
                 .product(name: "SwiftProtobuf", package: "swift-protobuf")
             ]
         ),

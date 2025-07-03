@@ -41,7 +41,7 @@ public actor BibleChapterRepository: ObservableObject {
     private var diskCache = ChapterDiskCache()
     
     static func cacheKey(reference: BibleReference) -> String {
-        "\(reference.chapterUSFM)-\(reference.versionId)"
+        "\(reference.chapterUSFM ?? "unknown")-\(reference.versionId)"
     }
     
     func chapter(withReference reference: BibleReference) async throws -> BibleChapterContent {
@@ -56,7 +56,7 @@ public actor BibleChapterRepository: ObservableObject {
             return cachedContent
         }
         
-        let content = try await BibleAPIs.chapter(reference: reference)
+        let content = try await YouVersionAPI.Bible.chapter(reference: reference)
         
         memoryCache[cacheKey] = content
         await diskCache.addChapterContent(content, reference: reference)

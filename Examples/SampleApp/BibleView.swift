@@ -6,7 +6,7 @@ public struct BibleView: View {
     public var body: some View {
         ScrollView {
             BibleTextView(
-                BibleReference(versionId: 111, bookUSFM: "EXO", chapterStart: 12, verseStart: 1, chapterEnd: 12, verseEnd: 15)
+                BibleReference(versionId: 111, bookUSFM: "JHN", chapter: 3, verse: 16)
             )
             .padding(.horizontal, 32)
         }

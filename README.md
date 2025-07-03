@@ -30,29 +30,18 @@ And now to display a single verse or verse range, this is all it takes:
 import YouVersionPlatform
 
 struct DemoView: View {
-    @StateObject private var version: BibleVersion
-    
-    init () {
-        _version = StateObject(wrappedValue: BibleVersion(111).readied)
-    }
-
     var body: some View {
-        if let ref = version.usfm("JHN.3.16-17") {
-            BibleTextView(ref)
-        }
+        BibleTextView(
+            BibleReference(versionId: 111, bookUSFM: "JHN", chapter: 3, verse: 16)
+        )
     }
 }
 ```
 
 If you're displaying a longer passage of Scripture than a single verse, 
-you should wrap `BibleTextView` inside a normal SwiftUI ScrollView.
+you should wrap `BibleTextView` inside a normal SwiftUI `ScrollView`.
 
 ### In case you're interested:
-
-The function `.readied` causes the YouVersionPlatform SDK to fetch metadata about 
-the given Bible version from the server. That happens in a background task. 
-Once that finishes, the `version.usfm(_:)` call will return a `BibleReference`
-object, which then allows the `BibleTextView` to be displayed.
 
 When `BibleTextView` is rendered, it will fetch the necessary Bible text 
 from the YouVersion server as needed and display it as soon as it can.
@@ -88,24 +77,25 @@ In the header of your SwiftUI view, store a strong reference to the `ContextProv
 
 Finally, inside your SwiftUI view, add the button and start the login process when it is tapped:
 ```swift
-    LoginWithYouVersionButton() {
-        YouVersionPlatform.login(
-            contextProvider: contextProvider,
-            required: [.bibles],
-            optional: [.highlights]
-        ) { result in
-            switch result {
-            case .success(let info):
-                print(info)
-                // The user is logged in and you have an access token (AKA limited access token, or LAT)!
-                // Now you can use the access token in YouVersion Platform API calls.
-                // You should save the access token locally so the user doesn't have to log in again next time.
+    LoginWithYouVersionButton {
+        Task {
+            do {
+                let result = try await YouVersionAPI.Users.logIn(
+                    requiredPermissions: [.bibles],
+                    optionalPermissions: [.highlights],
+                    contextProvider: contextProvider
+                )
+                accessToken = result.accessToken
+                dump(result)
+                // The user is logged in and you have a LAT (a limited access token)!
+                // Now you can use the LAT in YouVersion Platform API calls.
+                // You should save the LAT locally so the user doesn't have to log in again next time.
                 // You may examine the "permissions" parameter to see what the user approved;
                 // e.g. perhaps they didn't grant access for your app to see their highlights.
-            case .failure(let error):
+            } catch {
                 print(error)
             }
-        } 
+        }
     }
 ```
 
@@ -116,19 +106,27 @@ Once you have an access token (see above), you can use it like this:
 private func loadUI(accessToken: String) {
     Task {
         do {
-            let info = try await YouVersionPlatform.userInfo(accessToken: accessToken)
+            let info = try await YouVersionAPI.Users.userInfo(accessToken: accessToken)
             self.userWelcome = "Welcome, \(info.firstName)!"
-        } catch {
-            // handle the error
-        }
-        do {
-            let votd = try await YouVersionPlatform.verseOfTheDay(versionId: 1)
-            self.votdTitle = "\(votd.reference) (\(votd.abbreviation))"
-            self.votdText = votd.text
-            self.votdCopyright = votd.copyright
         } catch {
             // handle the error
         }
     }
 }
 ```
+
+## Displaying the Verse of the Day
+
+If you just want to display a simple VOTD view, you can use the one built into the SDK:
+```swift
+var body: some View {
+    VotdView()
+}
+```
+
+If you want to use the data of the VOTD in your own UI, you can request it like this:
+```swift
+let votd = try await YouVersionAPI.VOTD.verseOfTheDay(versionId: 111)
+```
+
+That will give you properties such as the reference and text to work with.

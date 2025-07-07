@@ -8,7 +8,7 @@ public enum YouVersionAPI {
     /// for the authenticated user, using the provided `accessToken`. The highlights include color, chapter,
     /// and verse information for the user's saved highlights in that chapter.
     ///
-    /// A valid `YouVersionPlatformConfiguration.appKey` must be set before calling this function.
+    /// A valid `YouVersionPlatformConfiguration.appId` must be set before calling this function.
     ///
     /// - Parameters:
     ///   - usfm: The USFM identifier for the chapter (e.g., `"JHN.3"`).
@@ -29,8 +29,8 @@ public enum YouVersionAPI {
             return [BibleHighlight.preview]
         }
         
-        guard let appKey = YouVersionPlatformConfiguration.appKey else {
-            preconditionFailure("YouVersionPlatformConfiguration.appKey must be set.")
+        guard let appId = YouVersionPlatformConfiguration.appId else {
+            preconditionFailure("YouVersionPlatformConfiguration.appId must be set.")
         }
         
         guard let url = URLBuilder.highlightsURL(usfm: usfm, versionId: versionId, accessToken: accessToken) else {
@@ -38,14 +38,14 @@ public enum YouVersionAPI {
         }
         
         var request = URLRequest(url: url)
-        request.setValue(appKey, forHTTPHeaderField: "X-App-Id")
+        request.setValue(appId, forHTTPHeaderField: "X-App-Id")
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let httpResponse: HTTPURLResponse = response as? HTTPURLResponse else {
             print("highlightsForChapter: unexpected response type")
             return []
         }
         if httpResponse.statusCode == 401 {
-            print("highlightsForChapter: error 401: unauthorized. Check your appKey")
+            print("highlightsForChapter: error 401: unauthorized. Check your appId")
             return []
         }
         guard httpResponse.statusCode == 200 else {

@@ -30,14 +30,14 @@ enum URLBuilder {
     }
     
     static func authURL(
-        appKey: String,
+        appId: String,
         requiredPermissions: Set<YouVersionPermission> = [],
         optionalPermissions: Set<YouVersionPermission> = []
     ) -> URL? {
         var components = baseURLComponents
         components.path = "/auth/login"
         components.queryItems = [
-            URLQueryItem(name: "app_id", value: appKey),
+            URLQueryItem(name: "app_id", value: appId),
             URLQueryItem(name: "language", value: "en"),  // TODO load from the system
             URLQueryItem(name: "required_perms", value: requiredPermissions.map { $0.rawValue }.joined(separator: ",")),
             URLQueryItem(name: "opt_perms", value: optionalPermissions.map { $0.rawValue }.joined(separator: ","))

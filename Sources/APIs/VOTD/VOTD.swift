@@ -7,7 +7,7 @@ public extension YouVersionAPI {
         /// This function fetches the Verse of the Day using the provided `versionId` (defaulting to `1` for KJV if not specified),
         /// returning a ``YouVersionVerseOfTheDay`` model containing the verse text, reference, and related metadata.
         ///
-        /// A valid `YouVersionPlatformConfiguration.appKey` must be set before calling this function.
+        /// A valid `YouVersionPlatformConfiguration.appId` must be set before calling this function.
         ///
         /// - Parameter versionId: The ID of the Bible version to use for retrieving the Verse of the Day. Defaults to `1` (KJV).
         /// - Returns: A ``YouVersionVerseOfTheDay`` containing the verse text, reference, and associated information.
@@ -20,7 +20,7 @@ public extension YouVersionAPI {
             }
 
             var request = URLRequest(url: url)
-            request.setValue(YouVersionPlatformConfiguration.appKey, forHTTPHeaderField: "X-App-Id")
+            request.setValue(YouVersionPlatformConfiguration.appId, forHTTPHeaderField: "X-App-Id")
             let (data, _) = try await URLSession.shared.data(for: request)
             guard let decodedResponse = try? JSONDecoder().decode(YouVersionVerseOfTheDay.self, from: data) else {
                 throw URLError(.badServerResponse)

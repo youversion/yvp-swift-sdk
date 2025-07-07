@@ -31,7 +31,7 @@ import YouVersionPlatform
 @main
 struct yourApp: App {
     init() {
-        YouVersionPlatform.configure(appKey: "YOUR_APP_KEY_HERE")
+        YouVersionPlatform.configure(appId: "YOUR_APP_ID_HERE")
     }
     var body: some Scene {...
 ```

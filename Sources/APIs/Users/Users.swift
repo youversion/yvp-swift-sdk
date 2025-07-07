@@ -23,12 +23,12 @@ public extension YouVersionAPI {
             optionalPermissions: Set<YouVersionPermission>,
             contextProvider: ASWebAuthenticationPresentationContextProviding
         ) async throws -> YouVersionLoginResult {
-            guard let appKey = YouVersionPlatformConfiguration.appKey else {
-                preconditionFailure("YouVersionPlatformConfiguration.appKey must be set")
+            guard let appId = YouVersionPlatformConfiguration.appId else {
+                preconditionFailure("YouVersionPlatformConfiguration.appId must be set")
             }
             
             guard let url = URLBuilder.authURL(
-                appKey: appKey,
+                appId: appId,
                 requiredPermissions: requiredPermissions,
                 optionalPermissions: optionalPermissions
             ) else {

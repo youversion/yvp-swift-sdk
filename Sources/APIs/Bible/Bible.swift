@@ -25,7 +25,7 @@ public extension YouVersionAPI {
         ///   - `BibleVersionAPIError.notPermitted` if the app key is invalid or lacks permission.
         ///   - `BibleVersionAPIError.cannotDownload` if the server returns an error response.
         ///   - `BibleVersionAPIError.invalidResponse` if the server response is not valid.
-        static func metadata(versionId: Int) async throws -> Data {
+        public static func metadata(versionId: Int) async throws -> Data {
             guard let appId = YouVersionPlatformConfiguration.appId else {
                 preconditionFailure("YouVersionPlatformConfiguration.appId must be set.")
             }
@@ -72,7 +72,7 @@ public extension YouVersionAPI {
         ///   - `BibleVersionAPIError.notPermitted` if the app key is invalid or lacks permission.
         ///   - `BibleVersionAPIError.cannotDownload` if the server returns an error response.
         ///   - `BibleVersionAPIError.invalidResponse` if the server response is not valid.
-        static func chapter(reference: BibleReference) async throws -> BibleChapterContent {
+        public static func chapter(reference: BibleReference) async throws -> BibleChapterContent {
             guard let appId = YouVersionPlatformConfiguration.appId else {
                 preconditionFailure("YouVersionPlatformConfiguration.appId must be set.")
             }
@@ -124,7 +124,7 @@ public extension YouVersionAPI {
         ///   - `BibleVersionAPIError.notPermitted` if the app key is invalid or lacks permission.
         ///   - `BibleVersionAPIError.cannotDownload` if the server returns an error response.
         ///   - `BibleVersionAPIError.invalidResponse` if the server response is not valid.
-        static func versions(forLanguageTag languageTag: String? = nil) async throws -> [BibleVersionOverview] {
+        public static func versions(forLanguageTag languageTag: String? = nil) async throws -> [BibleVersionOverview] {
             guard let appId = YouVersionPlatformConfiguration.appId else {
                 preconditionFailure("YouVersionPlatformConfiguration.appId must be set.")
             }

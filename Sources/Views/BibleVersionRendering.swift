@@ -66,7 +66,7 @@ enum BibleVersionRendering {
             )
             var stateUp = StateUp(
                 rendering: verseStart <= 1,
-                lineIsEmpty: true,
+                isLineEmpty: true,
                 firstLineHeadIndent: 0,
                 headIndent: 0,
                 chapter: c,
@@ -116,7 +116,7 @@ enum BibleVersionRendering {
             && node.children.count == 1 && node.children.first?.type == .text {
             if let t = node.children.first?.text {
                 if stateIn.renderVerseNumbers {
-                    let maybeSpace = stateUp.lineIsEmpty ? "" : " "
+                    let maybeSpace = stateUp.isLineEmpty ? "" : " "
                     let vn = DoubleAttributedString(maybeSpace + "\(t)\u{00a0}")  // nonbreaking space
                     vn.setFont(DoubleFont(one: stateIn.fonts.one.verseNumFont, two: stateIn.fonts.two.verseNumFont))
                     vn.setBaselineOffset(stateIn.fonts.one.verseNumBaselineOffset)
@@ -135,7 +135,7 @@ enum BibleVersionRendering {
         } else {
             for child in node.children {
                 handleBlockChild(child, stateIn: stateIn, stateDown: stateDown, stateUp: &stateUp)
-                stateUp.lineIsEmpty = false  // TODO: this line has existed for a while. Should it?
+                stateUp.isLineEmpty = false  // TODO: this line has existed for a while. Should it?
             }
         }
     }
@@ -163,7 +163,7 @@ enum BibleVersionRendering {
             }
             // TODO: add a space here? Maybe only if it doesn't already end with whitespace?
         }
-        stateUp.lineIsEmpty = false  // TODO: this line has existed for a while. Should it?
+        stateUp.isLineEmpty = false  // TODO: this line has existed for a while. Should it?
     }
 
     private static func handleNodeCell(
@@ -535,7 +535,7 @@ enum BibleVersionRendering {
     // child nodes change and pass up to their parent node.
     private struct StateUp {
         var rendering: Bool
-        var lineIsEmpty = true  // have we not seen text in the current block yet?
+        var isLineEmpty = true  // have we not seen text in the current block yet?
         var firstLineHeadIndent = 0
         var headIndent = 0
         var chapter: Int
@@ -549,14 +549,14 @@ enum BibleVersionRendering {
             verseOffsets.append(verse)
             if !newText.isEmpty {
                 text += newText
-                lineIsEmpty = false
+                isLineEmpty = false
             }
         }
 
         mutating func clearText() {
             text = DoubleAttributedString()
             verseOffsets.removeAll()
-            lineIsEmpty = true
+            isLineEmpty = true
         }
     }
 
@@ -663,11 +663,17 @@ struct BibleTextBlock: Identifiable {
     let alignment: TextAlignment
     let footnotes: [DoubleAttributedString]
 
-    init(text: DoubleAttributedString,
-         chapter: Int, verseOffsets: [Int],
-         firstLineHeadIndent: Int, headIndent: Int, marginTop: CGFloat, alignment: TextAlignment,
-         footnotes: [DoubleAttributedString],
-         rows: [[DoubleAttributedString]] = []) {
+    init(
+        text: DoubleAttributedString,
+        chapter: Int,
+        verseOffsets: [Int],
+        firstLineHeadIndent: Int,
+        headIndent: Int,
+        marginTop: CGFloat,
+        alignment: TextAlignment,
+        footnotes: [DoubleAttributedString],
+        rows: [[DoubleAttributedString]] = []
+    ) {
         self.text = text
         self.chapter = chapter
         self.verseOffsets = verseOffsets

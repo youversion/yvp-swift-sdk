@@ -57,7 +57,7 @@ struct StateDown: Equatable {
 
 struct StateUp: Equatable {
     var rendering: Bool = true
-    var lineIsEmpty: Bool = true
+    var isLineEmpty: Bool = true
     var firstLineHeadIndent: Int = 0
     var headIndent: Int = 0
 }

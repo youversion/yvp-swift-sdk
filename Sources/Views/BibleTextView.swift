@@ -10,8 +10,8 @@ public struct BibleTextView: View {
     private let onVerseTap: VerseTapAction?
     private let fonts: BibleTextFonts
     private let uiFonts: BibleTextUIFonts
-    private let rtl = false
-    @State private var blocks: [BibleTextBlock]
+    private let isRightToLeft = false
+    @State private var blocks: [BibleTextBlock] = []
     @State private var ourFrames: [UUID: CGRect] = [:]  // actual frames of each UI widget holding tappable text
     @Environment(\.colorScheme) var colorScheme  // for detecting when the user switches in/out of dark mode
 
@@ -28,21 +28,21 @@ public struct BibleTextView: View {
         self.onVerseTap = onVerseTap
         self.fonts = BibleTextFonts(familyName: theOptions.fontFamily, baseSize: theOptions.fontSize)
         self.uiFonts = BibleTextUIFonts(familyName: theOptions.fontFamily, baseSize: theOptions.fontSize)
-        self.blocks = []
     }
 
     public var body: some View {
-        VStack(alignment: rtl ? .trailing : .leading) {
+        VStack(alignment: isRightToLeft ? .trailing : .leading) {
             if blocks.isEmpty {
                 Spacer()
             } else {
                 ForEach(blocks, id: \.id) { block in
-                    renderView(for: block)
+                    view(for: block)
                 }
             }
         }
-        .task { await loadBlocks() }
-        .onChange(of: reference) { Task { await loadBlocks() } }
+        .task(id: reference) {
+            await loadBlocks()
+        }
         .coordinateSpace(name: "BibleTextView")
     }
     
@@ -61,7 +61,7 @@ public struct BibleTextView: View {
         let verseOffsets = block.verseOffsets
 
         // Skip if there are no verse offsets or highlights
-        guard !verseOffsets.isEmpty, !highlights.isEmpty else {
+        guard !verseOffsets.isEmpty && !highlights.isEmpty else {
             return block
         }
 
@@ -87,45 +87,44 @@ public struct BibleTextView: View {
 
         return highlightedBlock
     }
-
-    private func renderView(for block: BibleTextBlock) -> some View {
-        Group {
-            if block.rows.isEmpty {
-                let theView = emitTextBlock(addHighlight(block))
-                if block.alignment == .leading {
+    
+    @ViewBuilder
+    private func view(for block: BibleTextBlock) -> some View {
+        if block.rows.isEmpty {
+            let theView = emitTextBlock(addHighlight(block))
+            if block.alignment == .leading {
+                theView
+            } else {
+                HStack {
+                    Spacer()
                     theView
-                } else {
-                    HStack {
+                    if block.alignment == .center {
                         Spacer()
-                        theView
-                        if block.alignment == .center {
-                            Spacer()
-                        }
                     }
                 }
-            } else {
-                emitTableRows(block.rows)
             }
+        } else {
+            emitTableRows(block.rows)
         }
     }
 
-    // This is necessary because SwiftUI's AttributedString doesn't have a
+    // This hack is necessary because AttributedString doesn't have a
     // ParagraphStyle or any other way to specify .firstLineHeadIndent.
     // NSAttributedString has paragraphStyle.firstLineHeadIndent which would be ideal.
-    private func indentHack(_ indent: Int) -> AttributedString {
+    private func indentString(_ indent: Int) -> AttributedString {
         let nbsp = "\u{00a0}"
         return AttributedString(String(repeating: nbsp, count: min(max(indent, 0), 4)))
     }
 
-    private func rememberGeometry(_ val: UUID, frame: CGRect) {
+    private func cacheFrame(_ frame: CGRect, forId id: UUID) {
         Task {
-            ourFrames[val] = frame
+            ourFrames[id] = frame
         }
     }
 
     private func emitTextBlock(_ block: BibleTextBlock) -> some View {
         let align = block.alignment
-        let indent = indentHack(block.firstLineHeadIndent)
+        let indent = indentString(block.firstLineHeadIndent)
         let txt = Text(indent + block.text.two)
             .fixedSize(horizontal: false, vertical: true)
             .multilineTextAlignment(align)
@@ -151,7 +150,7 @@ public struct BibleTextView: View {
             // in order for tap handling to determine where in the text the user tapped.
             .overlay(
                 GeometryReader { geo in
-                    rememberGeometry(blockId, frame: geo.frame(in: .named("BibleTextView")))
+                    cacheFrame(geo.frame(in: .named("BibleTextView")), forId: blockId)
                     return Color.clear
                 }
             )
@@ -185,18 +184,19 @@ public struct BibleTextView: View {
         .padding()
     }
 
-    // so that the Grid has an Hashable, Identifiable list to work with
-    struct TableCellString: Hashable, Identifiable {
+    // so that the Grid has a Hashable, Identifiable list to work with
+    private struct TableCellString: Hashable, Identifiable {
         let id = UUID()  // for Identifiable
         let string: AttributedString
     }
-    struct TableRowStrings: Hashable, Identifiable {
+    
+    private struct TableRowStrings: Hashable, Identifiable {
         let id = UUID()  // for Identifiable
         let strings: [TableCellString]
     }
 
     // MARK: - Utilities
-    private func findBlockById(_ id: UUID) -> BibleTextBlock? {
+    private func block(with id: UUID) -> BibleTextBlock? {
         blocks.first { $0.id == id }
     }
 
@@ -204,51 +204,45 @@ public struct BibleTextView: View {
                                    blockId: UUID,
                                    blockText: NSAttributedString,
                                    extraChars: Int) -> Int? {
-        guard let ourFrame = ourFrames[blockId] else {
+        guard let ourFrame = ourFrames[blockId],
+              let block = block(with: blockId),
+              let i = characterIndex(
+                for: pointInView,
+                firstLineHeadIndent: block.firstLineHeadIndent,
+                lineSpacing: options.lineSpacing,
+                text: block.text.one,
+                size: ourFrame.size
+              ) else {
             return nil
         }
-        guard let block = findBlockById(blockId) else {
-            return nil
-        }
-        guard let i = characterIndex(
-            for: pointInView,
-            firstLineHeadIndent: block.firstLineHeadIndent,
-            lineSpacing: options.lineSpacing,
-            text: block.text.one,
-            size: ourFrame.size
-        ) else {
-            return nil
-        }
-        guard let verse = verseAtIndex(i - extraChars, from: block) else {
-            return nil
-        }
-        return verse
+        return verseAtIndex(i - extraChars, from: block)
     }
 
     private func handleTap(at pointInView: CGPoint,
                            blockId: UUID,
                            blockText: NSAttributedString,
                            extraChars: Int = 0) {
-        if let verse = verseNumFromPoint(
+        guard let verse = verseNumFromPoint(
             pointInView: pointInView,
             blockId: blockId,
             blockText: blockText,
             extraChars: extraChars
-        ) {
-            if let ourFrame = ourFrames[blockId],
-               let block = findBlockById(blockId) {
-                let pointInSelf = CGPoint(
-                    x: pointInView.x + ourFrame.origin.x,
-                    y: pointInView.y + ourFrame.origin.y
-                )
-                let info = BibleVerseData(
-                    chapter: block.chapter,
-                    verse: verse,
-                    footnotes: block.footnotes.map({ double in double.two })
-                )
-                onVerseTap?(info, pointInSelf)
-            }
+        ),
+              let ourFrame = ourFrames[blockId],
+              let block = block(with: blockId) else {
+            return
         }
+        
+        let pointInSelf = CGPoint(
+            x: pointInView.x + ourFrame.origin.x,
+            y: pointInView.y + ourFrame.origin.y
+        )
+        let info = BibleVerseData(
+            chapter: block.chapter,
+            verse: verse,
+            footnotes: block.footnotes.map({ double in double.two })
+        )
+        onVerseTap?(info, pointInSelf)
     }
 
 }

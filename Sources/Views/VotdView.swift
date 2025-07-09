@@ -86,20 +86,16 @@ public struct VotdView: View {
 }
 
 #Preview {
-    VStack {
-        Spacer()
-        VotdView(
-            votd: YouVersionVerseOfTheDay(
-                reference: "John 3:16",
-                abbreviation: "NIV",
-                text: "For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.",
-                copyright: "The Holy Bible, New International Version® NIV®\nCopyright © 1973, 1978, 1984, 2011 by Biblica, Inc.®\nUsed by Permission of Biblica, Inc.® All rights reserved worldwide."
-            ),
-            backgroundUrl: "https://imageproxy.youversionapi.com/1500x/" +
-                           "https://votd-background-images-prod.storage.googleapis.com/113.jpg",
-            minHeight: 200,
-            maxHeight: 450
-        )
-        Spacer()
-    }
+    VotdView(
+        votd: YouVersionVerseOfTheDay(
+            reference: "John 3:16",
+            abbreviation: "NIV",
+            text: "For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.",
+            copyright: "The Holy Bible, New International Version® NIV®\nCopyright © 1973, 1978, 1984, 2011 by Biblica, Inc.®\nUsed by Permission of Biblica, Inc.® All rights reserved worldwide."
+        ),
+        backgroundUrl: "https://imageproxy.youversionapi.com/1500x/" +
+        "https://votd-background-images-prod.storage.googleapis.com/113.jpg",
+        minHeight: 200,
+        maxHeight: 450
+    )
 }

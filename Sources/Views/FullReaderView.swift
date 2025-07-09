@@ -1,5 +1,6 @@
 import SwiftUI
 import AuthenticationServices
+import Foundation
 
 /// Helper to detect scroll offset in ScrollView
 struct ScrollOffsetPreferenceKey: PreferenceKey {
@@ -10,26 +11,13 @@ struct ScrollOffsetPreferenceKey: PreferenceKey {
     }
 }
 
+
 public struct FullReaderView: View {
-    @State var reference: BibleReference
+    @StateObject private var viewModel: FullReaderViewModel
     @State private var contextProvider = ContextProvider()
 
-    let textOptions = BibleTextOptions(fontFamily: "Georgia", fontSize: 18)
-    let highlightColor = "fffeca"
-
-    @State private var highlights: [BibleHighlight]?
-    @StateObject private var versionRepository = BibleVersionRepository()
-    @State private var version: BibleVersion?
-    @State private var isVersionLoaded = false
-
-    @State private var showChrome = true
-    @State private var lastScrollOffset: CGFloat = 0
-    @State private var isUserScrolling = false
-
     public init(reference: BibleReference, version: BibleVersion? = nil) {
-        self._reference = State(initialValue: reference)
-        self.version = version
-        self.isVersionLoaded = version != nil
+        _viewModel = StateObject(wrappedValue: FullReaderViewModel(reference: reference, version: version))
     }
 
     public var body: some View {
@@ -44,19 +32,19 @@ public struct FullReaderView: View {
                                 .preference(key: ScrollOffsetPreferenceKey.self, value: geo.frame(in: .named("scrollView")).minY)
                         }
                         .frame(height: 0)
-                        if isVersionLoaded, let version = version {
+                        if viewModel.isVersionLoaded, let version = viewModel.version {
                             VStack {
-                                Text(version.bookName(reference.bookUSFM) ?? reference.bookUSFM ?? "?")
-                                    .font(Font.custom(textOptions.fontFamily, size: textOptions.fontSize))
-                                Text(String(reference.chapter))
-                                    .font(Font.custom(textOptions.fontFamily, size: textOptions.fontSize * 2.5))
+                                Text(version.bookName(viewModel.reference.bookUSFM) ?? viewModel.reference.bookUSFM ?? "?")
+                                    .font(Font.custom(viewModel.textOptions.fontFamily, size: viewModel.textOptions.fontSize))
+                                Text(String(viewModel.reference.chapter))
+                                    .font(Font.custom(viewModel.textOptions.fontFamily, size: viewModel.textOptions.fontSize * 2.5))
                                     .fontWeight(.bold)
                                     .padding(.bottom)
-                                BibleTextView(reference,
-                                              options: textOptions,
-                                              highlights: highlights ?? [],
+                                BibleTextView(viewModel.reference,
+                                              options: viewModel.textOptions,
+                                              highlights: viewModel.highlights ?? [],
                                               onVerseTap: { data, _ in
-                                    handleVerseTap(chapter: data.chapter, verse: data.verse)
+                                    viewModel.handleVerseTap(chapter: data.chapter, verse: data.verse)
                                 })
                             }
                             .padding()
@@ -73,17 +61,17 @@ public struct FullReaderView: View {
                     .coordinateSpace(name: "scrollView")
                     .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
                         Task { @MainActor in
-                            handleScroll(offset: value)
+                            viewModel.handleScroll(offset: value)
                         }
                     }
                 }
                 Spacer(minLength: 0)
             }
             // Floating chapter navigation buttons (chrome)
-            if showChrome {
+            if viewModel.showChrome {
                 HStack {
                     Button(action: {
-                        goToPreviousChapter()
+                        viewModel.goToPreviousChapter()
                     }) {
                         ZStack {
                             Circle()
@@ -97,7 +85,7 @@ public struct FullReaderView: View {
                     }
                     Spacer()
                     Button(action: {
-                        goToNextChapter()
+                        viewModel.goToNextChapter()
                     }) {
                         ZStack {
                             Circle()
@@ -113,131 +101,36 @@ public struct FullReaderView: View {
                 .padding(.horizontal, 24)
                 .padding(.bottom, 24)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                .allowsHitTesting(isVersionLoaded) // Only allow interaction when loaded
-                .opacity(isVersionLoaded ? 1 : 0.5)
-                .animation(.easeInOut(duration: 0.1), value: showChrome)
+                .allowsHitTesting(viewModel.isVersionLoaded)
+                .opacity(viewModel.isVersionLoaded ? 1 : 0.5)
+                .animation(.easeInOut(duration: 0.1), value: viewModel.showChrome)
             }
         }
         .task {
-            if !isVersionLoaded {
-                do {
-                    version = try await versionRepository.version(withId: reference.versionId)
-                    isVersionLoaded = true
-                } catch {
-                    print("Error loading default version: \(error)")
-                }
+            Task { @MainActor in
+                await viewModel.loadVersionIfNeeded()
             }
         }
-        .onChange(of: isVersionLoaded) {
+        .onChange(of: viewModel.isVersionLoaded) {
             // No need to update reference, it's passed in
-        }
-    }
-    // MARK: - Chapter navigation
-
-    private func goToPreviousChapter() {
-        if reference.chapter > 1 {
-            reference = BibleReference(versionId: reference.versionId, bookUSFM: reference.bookUSFM, chapter: reference.chapter - 1)
-            highlights = []
-        } else if let version = version {
-            // Find the index of the current book in the version's books array
-            if let index = version.books.firstIndex(where: { $0.usfm == reference.bookUSFM }), index > 0 {
-                let previousBook = version.books[index - 1]
-                let maxChapter = previousBook.chapters?.count ?? 0
-                reference = BibleReference(versionId: reference.versionId, bookUSFM: previousBook.usfm ?? "", chapter: maxChapter)
-                highlights = []
-            }
-        }
-    }
-
-    private func goToNextChapter() {
-        guard let version else {
-            return
-        }
-        
-        // Find the current book in the version's books array
-        if let index = version.books.firstIndex(where: { $0.usfm == reference.bookUSFM }) {
-            let currentBook = version.books[index]
-            let maxChapter = currentBook.chapters?.count ?? 0
-            if reference.chapter < maxChapter {
-                reference = BibleReference(versionId: reference.versionId, bookUSFM: currentBook.usfm ?? "", chapter: reference.chapter + 1)
-                highlights = []
-            } else if index < version.books.count - 1 {
-                // Go to first chapter of next book
-                let nextBook = version.books[index + 1]
-                reference = BibleReference(versionId: reference.versionId, bookUSFM: nextBook.usfm ?? "", chapter: 1)
-                highlights = []
-            }
         }
     }
 
     // MARK: - Helper views
-
     var headerWithAvatar: some View {
         HStack {
-            if isVersionLoaded, let version = version {
+            if viewModel.isVersionLoaded, let version = viewModel.version {
                 BibleReaderHeaderView(version: version,
-                                     book: reference.bookUSFM,
-                                     chapter: reference.chapter,
+                                     book: viewModel.reference.bookUSFM,
+                                     chapter: viewModel.reference.chapter,
                                      onSelectionChange: { v, b, c in
                     Task {
-                        do {
-                            if self.version?.id != v {
-                                self.version = try await versionRepository.version(withId: v)
-                                self.isVersionLoaded = true
-                            }
-                            self.reference = BibleReference(versionId: v, bookUSFM: b, chapter: c)
-                            self.highlights = []
-                        } catch {
-                            print("Error loading version/chapter: \(error)")
-                        }
+                        await viewModel.onHeaderSelectionChange(v: v, b: b, c: c)
                     }
                 })
                 .padding(.leading)
             }
             Spacer()
-        }
-    }
-
-    // MARK: - Tap handlers
-
-    // MARK: - Scroll handling
-    private func handleScroll(offset: CGFloat) {
-        // Hide chrome when scrolling up, show when scrolling down or at top
-        let threshold: CGFloat = 10
-        if offset <= 0 {
-            // At the very top
-            withAnimation(.easeInOut(duration: 0.1)) { showChrome = true }
-        } else if abs(offset - lastScrollOffset) >= threshold {
-            if offset < lastScrollOffset - threshold {
-                // Scrolling up
-                withAnimation(.easeInOut(duration: 0.1)) { showChrome = false }
-            } else if offset > lastScrollOffset + threshold {
-                // Scrolling down
-                withAnimation(.easeInOut(duration: 0.1)) { showChrome = true }
-            }
-        }
-        lastScrollOffset = offset
-    }
-
-    func handleVerseTap(chapter: Int, verse: Int) {
-        guard let version = version else { return }
-        let h = BibleHighlight(versionId: version.id,
-                               chapter: chapter,
-                               verse: verse,
-                               color: highlightColor)
-
-        if var highlights = self.highlights,
-            let index = highlights.firstIndex(where: { $0.versionId == h.versionId &&
-                $0.chapter == h.chapter &&
-                $0.verse == h.verse }) {
-            if highlights[index].color == h.color {
-                highlights.remove(at: index)
-                self.highlights = highlights
-            } else {
-                //self.highlights![index].color = h.color
-            }
-        } else {
-            self.highlights?.append(h)
         }
     }
 

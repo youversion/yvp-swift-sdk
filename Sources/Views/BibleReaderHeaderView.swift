@@ -4,18 +4,12 @@ public struct BibleReaderHeaderView: View {
     @State private var showingBookPicker = false
     @State private var showingChapterPicker = false
     @State private var showingVersionPicker = false
-    @StateObject private var viewModel = BibleReaderHeaderViewModel()
-    let version: BibleVersion
-    let book: String
-    let chapter: Int
-    private let bookCodes: [String]
+    @State private var expandedBook: String? = nil
+    @StateObject private var viewModel: BibleReaderHeaderViewModel
     let onSelectionChange: ((Int, String, Int) -> Void)?
 
     public init(version: BibleVersion, book: String, chapter: Int, onSelectionChange: ((Int, String, Int) -> Void)? = nil) {
-        self.version = version
-        self.book = book
-        self.chapter = chapter
-        self.bookCodes = version.bookUSFMs
+        _viewModel = StateObject(wrappedValue: BibleReaderHeaderViewModel(version: version, book: book, chapter: chapter))
         self.onSelectionChange = onSelectionChange
     }
 
@@ -26,16 +20,11 @@ public struct BibleReaderHeaderView: View {
         .sheet(isPresented: $showingVersionPicker) {
             versionPickerView
         }
-        .sheet(isPresented: $showingBookPicker) {
-            bookPickerView
-        }
-        .sheet(isPresented: $showingChapterPicker) {
-            chaptersList
-                .frame(maxWidth: 400, maxHeight: 600)
-                .padding()
+        .sheet(isPresented: $showingBookPicker, onDismiss: { expandedBook = nil }) {
+            // Reset expandedBook each time the picker appears
+            bookAndChapterPickerView
         }
     }
-
     var versionPickerView: some View {
         Group {
             if viewModel.permittedVersions.isEmpty {
@@ -45,49 +34,77 @@ public struct BibleReaderHeaderView: View {
                     Text(v.title ?? v.abbreviation ?? String(v.id))
                         .onTapGesture {
                             showingVersionPicker = false
-                            onSelectionChange?(v.id, book, chapter)
+                            onSelectionChange?(v.id, viewModel.book, viewModel.chapter)
                         }
                 }
             }
         }
     }
 
-    var bookPickerView: some View {
-        List(bookCodes, id: \.self) { bookCode in
-            Text(version.bookName(bookCode) ?? bookCode)
-                .onTapGesture {
-                    showingBookPicker = false
-                    onSelectionChange?(version.id, bookCode, 1)
+    /// Combined Book & Chapter Picker: tap a book to expand, then pick a chapter from a grid
+    var bookAndChapterPickerView: some View {
+        ZStack {
+            VStack(spacing: 0) {
+                HStack {
+                    Spacer()
+                    Text("Books")
+                        .font(.headline)
+                    Spacer()
                 }
-        }
-    }
-
-    var chaptersList: some View {
-        let chapters = version.chapterLabels(book)
-        let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 5)
-        return ScrollView {
-            LazyVGrid(columns: columns, spacing: 12) {
-                ForEach(chapters.indices, id: \.self) { index in
-                    Button(action: {
-                        showingChapterPicker = false
-                        onSelectionChange?(version.id, book, index + 1)
-                    }) {
-                        Text(chapters[index])
-                            .frame(maxWidth: .infinity)
-                            .padding(8)
-                            .background(
-                                Capsule()
-                                    .fill(Color.gray.opacity(0.2))
-                            )
+                .padding(.vertical, 16)
+                List {
+                    ForEach(viewModel.bookCodes, id: \.self) { bookCode in
+                        Section(
+                            header:
+                                HStack(spacing: 8) {
+                                    Text(viewModel.bookName(for: bookCode) ?? bookCode)
+                                        .font(.body)
+                                        .foregroundColor(.black)
+                                    Spacer(minLength: 4)
+                                    Image(systemName: expandedBook == bookCode ? "chevron.up" : "chevron.down")
+                                        .font(.system(size: 14))
+                                }
+                                .contentShape(Rectangle())
+                                .padding(.vertical, 2)
+                                .listRowInsets(EdgeInsets(top: 2, leading: 12, bottom: 2, trailing: 12))
+                                .onTapGesture {
+                                    withAnimation {
+                                        expandedBook = expandedBook == bookCode ? nil : bookCode
+                                    }
+                                }
+                                .textCase(nil)
+                        ) {
+                            if expandedBook == bookCode {
+                                let chapters = viewModel.chapterLabels(for: bookCode)
+                                let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 5)
+                                LazyVGrid(columns: columns, spacing: 12) {
+                                    ForEach(chapters.indices, id: \.self) { idx in
+                                        Button(action: {
+                                            showingBookPicker = false
+                                            onSelectionChange?(viewModel.versionId, bookCode, idx + 1)
+                                        }) {
+                                            Text(chapters[idx])
+                                                .foregroundColor(.black)
+                                                .frame(width: 50, height: 50)
+                                                .background(
+                                                    RoundedRectangle(cornerRadius: 8)
+                                                        .fill(Color.gray.opacity(0.2))
+                                                )
+                                        }
+                                        .buttonStyle(PlainButtonStyle())
+                                    }
+                                }
+                                .padding(.vertical, 8)
+                            }
+                        }
                     }
                 }
             }
-            .padding()
         }
     }
 
     var HalfPillPickers: some View {
-        let bookAndChapter = "\(version.bookName(book) ?? book) \(chapter)"
+        let bookAndChapter = "\(viewModel.bookName(for: viewModel.book) ?? viewModel.book) \(viewModel.chapter)"
         return HStack(spacing: 0) {
             Button(action: { showingBookPicker = true }) {
                 Text(bookAndChapter)
@@ -106,7 +123,7 @@ public struct BibleReaderHeaderView: View {
                 .overlay(Color.white)
 
             Button(action: { handleVersionTap() }) {
-                Text(version.abbreviation ?? String(version.id))
+                Text(viewModel.versionAbbreviation ?? String(viewModel.versionId))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.black)
                     .frame(minWidth: 36)
@@ -158,6 +175,36 @@ public struct BibleReaderHeaderView: View {
 @MainActor
 class BibleReaderHeaderViewModel: ObservableObject {
     @Published var permittedVersions: [BibleVersionOverview] = []
+
+    let version: BibleVersion
+    let book: String
+    let chapter: Int
+
+    init(version: BibleVersion, book: String, chapter: Int) {
+        self.version = version
+        self.book = book
+        self.chapter = chapter
+    }
+
+    var bookCodes: [String] {
+        version.bookUSFMs
+    }
+
+    func bookName(for bookCode: String) -> String? {
+        version.bookName(bookCode)
+    }
+
+    func chapterLabels(for bookCode: String) -> [String] {
+        version.chapterLabels(bookCode)
+    }
+
+    var versionId: Int {
+        version.id
+    }
+
+    var versionAbbreviation: String? {
+        version.abbreviation
+    }
 
     func loadVersionsList() {
         guard permittedVersions.isEmpty else { return }

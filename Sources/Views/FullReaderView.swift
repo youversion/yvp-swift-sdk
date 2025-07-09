@@ -135,17 +135,39 @@ public struct FullReaderView: View {
     // MARK: - Chapter navigation
 
     private func goToPreviousChapter() {
-        guard reference.chapter > 1 else { return }
-        reference = BibleReference(versionId: reference.versionId, bookUSFM: reference.bookUSFM, chapter: reference.chapter - 1)
-        highlights = []
+        if reference.chapter > 1 {
+            reference = BibleReference(versionId: reference.versionId, bookUSFM: reference.bookUSFM, chapter: reference.chapter - 1)
+            highlights = []
+        } else if let version = version {
+            // Find the index of the current book in the version's books array
+            if let index = version.books.firstIndex(where: { $0.usfm == reference.bookUSFM }), index > 0 {
+                let previousBook = version.books[index - 1]
+                let maxChapter = previousBook.chapters?.count ?? 0
+                reference = BibleReference(versionId: reference.versionId, bookUSFM: previousBook.usfm ?? "", chapter: maxChapter)
+                highlights = []
+            }
+        }
     }
 
     private func goToNextChapter() {
-        // This assumes you have a way to determine the max chapter for the book. Replace 150 with actual max if available.
-        let maxChapter = 150 // TODO: Replace with actual max chapter for the book
-        guard reference.chapter < maxChapter else { return }
-        reference = BibleReference(versionId: reference.versionId, bookUSFM: reference.bookUSFM, chapter: reference.chapter + 1)
-        highlights = []
+        guard let version else {
+            return
+        }
+        
+        // Find the current book in the version's books array
+        if let index = version.books.firstIndex(where: { $0.usfm == reference.bookUSFM }) {
+            let currentBook = version.books[index]
+            let maxChapter = currentBook.chapters?.count ?? 0
+            if reference.chapter < maxChapter {
+                reference = BibleReference(versionId: reference.versionId, bookUSFM: currentBook.usfm ?? "", chapter: reference.chapter + 1)
+                highlights = []
+            } else if index < version.books.count - 1 {
+                // Go to first chapter of next book
+                let nextBook = version.books[index + 1]
+                reference = BibleReference(versionId: reference.versionId, bookUSFM: nextBook.usfm ?? "", chapter: 1)
+                highlights = []
+            }
+        }
     }
 
     // MARK: - Helper views

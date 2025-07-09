@@ -3,8 +3,10 @@ import Foundation
 public actor ChapterDiskCache {
     static func urlForCachedChapter(withUSFM usfm: String, versionId: Int) -> URL {
         let cachesDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
-        let directory = cachesDirectory.appending(path: "Chapters", directoryHint: .isDirectory)
-        return directory.appending(path: usfm, directoryHint: .notDirectory)
+        return cachesDirectory
+            .appending(path: "Chapters", directoryHint: .isDirectory)
+            .appending(path: "bible_\(versionId)", directoryHint: .isDirectory)
+            .appending(path: usfm, directoryHint: .notDirectory)
     }
     
     func chapterContent(withReference reference: BibleReference) -> BibleChapterContent? {

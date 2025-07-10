@@ -22,9 +22,11 @@ public struct FullReaderView: View {
 
     public var body: some View {
         ZStack {
-            VStack {
-                headerWithAvatar
+            VStack(spacing: 0) {
+                header
+                Spacer().frame(height: 4)
                 Divider()
+                    .frame(height: 1)
                 ScrollViewReader { scrollProxy in
                     ScrollView {
                         GeometryReader { geo in
@@ -116,7 +118,7 @@ public struct FullReaderView: View {
     }
 
     // MARK: - Helper views
-    var headerWithAvatar: some View {
+    var header: some View {
         HStack {
             if viewModel.isVersionLoaded, let version = viewModel.version {
                 BibleReaderHeaderView(version: version,

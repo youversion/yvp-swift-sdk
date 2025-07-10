@@ -122,8 +122,7 @@ public struct BibleReaderHeaderView: View {
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.black)
                     .frame(minWidth: 60)
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, 10)
             }
             .buttonStyle(PlainButtonStyle())
             .clipShape(HalfPillShape(side: .left))
@@ -138,8 +137,7 @@ public struct BibleReaderHeaderView: View {
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.black)
                     .frame(minWidth: 36)
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, 10)
             }
             .buttonStyle(PlainButtonStyle())
             .clipShape(HalfPillShape(side: .right))

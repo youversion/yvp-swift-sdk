@@ -50,8 +50,8 @@ public struct BookAndChapterPickerView: View {
                                         .font(.system(size: 14))
                                 }
                                 .contentShape(Rectangle())
-                                .padding(.vertical, 2)
-                                .listRowInsets(EdgeInsets(top: 2, leading: 12, bottom: 2, trailing: 12))
+                                .padding(.vertical, 0)
+                                .listRowInsets(EdgeInsets(top: 2, leading: 16, bottom: 2, trailing: 16))
                                 .onTapGesture {
                                     withAnimation {
                                         expandedBook = expandedBook == bookCode ? nil : bookCode
@@ -62,18 +62,19 @@ public struct BookAndChapterPickerView: View {
                             if expandedBook == bookCode {
                                 let chapters = chapterLabelsProvider(bookCode)
                                 let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 5)
-                                LazyVGrid(columns: columns, spacing: 12) {
+                                LazyVGrid(columns: columns, spacing: 10) {
                                     ForEach(chapters.indices, id: \.self) { idx in
                                         Button(action: {
                                             isPresented = false
                                             onSelectionChange?(versionId, bookCode, idx + 1)
                                         }) {
                                             Text(chapters[idx])
+                                                .font(.system(size: 14))
                                                 .foregroundColor(.black)
-                                                .frame(width: 50, height: 50)
+                                                .frame(width: 56, height: 56)
                                                 .background(
-                                                    RoundedRectangle(cornerRadius: 8)
-                                                        .fill(Color.gray.opacity(0.2))
+                                                    RoundedRectangle(cornerRadius: 4)
+                                                        .fill(Color(hex: "EDEBEC"))
                                                 )
                                         }
                                         .buttonStyle(PlainButtonStyle())
@@ -84,6 +85,7 @@ public struct BookAndChapterPickerView: View {
                         }
                     }
                 }
+                .listStyle(PlainListStyle())
             }
         }
     }

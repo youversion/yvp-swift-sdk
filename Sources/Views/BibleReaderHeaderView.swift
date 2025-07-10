@@ -6,17 +6,26 @@ public struct BibleReaderHeaderView: View {
     @State private var showingVersionPicker = false
     @State private var expandedBook: String? = nil
     @StateObject private var viewModel: BibleReaderHeaderViewModel
+    let showChrome: Bool
     let onSelectionChange: ((Int, String, Int) -> Void)?
 
-    public init(version: BibleVersion, book: String, chapter: Int, onSelectionChange: ((Int, String, Int) -> Void)? = nil) {
+    public init(version: BibleVersion, book: String, chapter: Int, showChrome: Bool = true, onSelectionChange: ((Int, String, Int) -> Void)? = nil) {
         _viewModel = StateObject(wrappedValue: BibleReaderHeaderViewModel(version: version, book: book, chapter: chapter))
+        self.showChrome = showChrome
         self.onSelectionChange = onSelectionChange
     }
 
     public var body: some View {
         HStack {
-            HalfPillPickers
+            if showChrome {
+                HalfPillPickers
+                    .transition(.opacity)
+            } else {
+                CompactLabels
+                    .transition(.opacity)
+            }
         }
+        .animation(.easeInOut(duration: 0.15), value: showChrome)
         .sheet(isPresented: $showingVersionPicker) {
             versionPickerView
         }
@@ -141,6 +150,24 @@ public struct BibleReaderHeaderView: View {
         .frame(height: 40)
     }
 
+    var CompactLabels: some View {
+        let bookAndChapter = "\(viewModel.bookName(for: viewModel.book) ?? viewModel.book) \(viewModel.chapter)"
+        return HStack(spacing: 8) {
+            Text(bookAndChapter)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.black)
+            
+            Divider()
+                .frame(width: 1, height: 14)
+                .background(Color.black)
+            
+            Text(viewModel.versionAbbreviation ?? String(viewModel.versionId))
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.black)
+        }
+        .frame(height: 24)
+    }
+
     // Custom shape for half-pill sides
     enum HalfPillSide { case left, right }
     struct HalfPillShape: Shape {
@@ -263,7 +290,11 @@ class BibleReaderHeaderViewModel: ObservableObject {
     
     VStack {
         Divider()
-        BibleReaderHeaderView(version: sampleVersion, book: "JHN", chapter: 3) { versionId, book, chapter in
+        BibleReaderHeaderView(version: sampleVersion, book: "JHN", chapter: 3, showChrome: true) { versionId, book, chapter in
+            print("Version: \(versionId), Book: \(book), Chapter: \(chapter)")
+        }
+        Divider()
+        BibleReaderHeaderView(version: sampleVersion, book: "JHN", chapter: 3, showChrome: false) { versionId, book, chapter in
             print("Version: \(versionId), Book: \(book), Chapter: \(chapter)")
         }
         Divider()

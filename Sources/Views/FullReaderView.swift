@@ -122,6 +122,7 @@ public struct FullReaderView: View {
                 BibleReaderHeaderView(version: version,
                                      book: viewModel.reference.bookUSFM,
                                      chapter: viewModel.reference.chapter,
+                                     showChrome: viewModel.showChrome,
                                      onSelectionChange: { v, b, c in
                     Task {
                         await viewModel.onHeaderSelectionChange(v: v, b: b, c: c)

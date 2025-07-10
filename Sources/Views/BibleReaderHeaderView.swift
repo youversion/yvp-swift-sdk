@@ -29,137 +29,26 @@ public struct BibleReaderHeaderView: View {
         }
         .animation(.easeInOut(duration: 0.15), value: showChrome)
         .sheet(isPresented: $showingVersionPicker) {
-            versionPickerView
+            BibleVersionPickerView(
+                permittedVersions: viewModel.permittedVersions,
+                currentBook: viewModel.book,
+                currentChapter: viewModel.chapter,
+                isPresented: $showingVersionPicker,
+                onVersionSelected: { versionId, book, chapter in
+                    onSelectionChange?(versionId, book, chapter)
+                }
+            )
         }
         .sheet(isPresented: $showingBookPicker, onDismiss: { expandedBook = nil }) {
-            // Reset expandedBook each time the picker appears
-            bookAndChapterPickerView
-        }
-    }
-    var versionPickerView: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Spacer()
-                Text("Versions")
-                    .font(.headline)
-                    .foregroundColor(.black)
-                Spacer()
-            }
-            .padding(.vertical, 16)
-            
-            Group {
-                if viewModel.permittedVersions.isEmpty {
-                    ProgressView()
-                } else {
-                    List(viewModel.permittedVersions, id: \.id) { v in
-                        HStack(spacing: 12) {
-                            // Rounded square with abbreviation
-                            VStack(spacing: 0) {
-                                let abbreviation = v.abbreviation ?? String(v.id)
-                                let (letters, numbers) = splitAbbreviation(abbreviation)
-                                
-                                Text(letters)
-                                    .font(.system(size: 11, weight: .semibold))
-                                    .foregroundColor(.black)
-                                    .lineLimit(1)
-                                
-                                if !numbers.isEmpty {
-                                    Text(numbers)
-                                        .font(.system(size: 10, weight: .semibold))
-                                        .foregroundColor(.black)
-                                        .lineLimit(1)
-                                }
-                            }
-                            .frame(width: 52, height: 52)
-                            .background(
-                                RoundedRectangle(cornerRadius: 4)
-                                    .fill(Color(hex: "F7EFED"))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 4)
-                                            .stroke(Color(hex: "DDDBDC"), lineWidth: 1)
-                                    )
-                            )
-                            
-                            // Version title
-                            Text(v.title ?? v.abbreviation ?? String(v.id))
-                                .font(.body)
-                                .foregroundColor(.black)
-                            
-                            Spacer()
-                        }
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            showingVersionPicker = false
-                            onSelectionChange?(v.id, viewModel.book, viewModel.chapter)
-                        }
-                        .listRowSeparator(.hidden)
-                        .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-                    }
-                    .listStyle(PlainListStyle())
-                }
-            }
-        }
-    }
-
-    /// Combined Book & Chapter Picker: tap a book to expand, then pick a chapter from a grid
-    var bookAndChapterPickerView: some View {
-        ZStack {
-            VStack(spacing: 0) {
-                HStack {
-                    Spacer()
-                    Text("Books")
-                        .font(.headline)
-                    Spacer()
-                }
-                .padding(.vertical, 16)
-                List {
-                    ForEach(viewModel.bookCodes, id: \.self) { bookCode in
-                        Section(
-                            header:
-                                HStack(spacing: 8) {
-                                    Text(viewModel.bookName(for: bookCode) ?? bookCode)
-                                        .font(.body)
-                                        .foregroundColor(.black)
-                                    Spacer(minLength: 4)
-                                    Image(systemName: expandedBook == bookCode ? "chevron.up" : "chevron.down")
-                                        .font(.system(size: 14))
-                                }
-                                .contentShape(Rectangle())
-                                .padding(.vertical, 2)
-                                .listRowInsets(EdgeInsets(top: 2, leading: 12, bottom: 2, trailing: 12))
-                                .onTapGesture {
-                                    withAnimation {
-                                        expandedBook = expandedBook == bookCode ? nil : bookCode
-                                    }
-                                }
-                                .textCase(nil)
-                        ) {
-                            if expandedBook == bookCode {
-                                let chapters = viewModel.chapterLabels(for: bookCode)
-                                let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 5)
-                                LazyVGrid(columns: columns, spacing: 12) {
-                                    ForEach(chapters.indices, id: \.self) { idx in
-                                        Button(action: {
-                                            showingBookPicker = false
-                                            onSelectionChange?(viewModel.versionId, bookCode, idx + 1)
-                                        }) {
-                                            Text(chapters[idx])
-                                                .foregroundColor(.black)
-                                                .frame(width: 50, height: 50)
-                                                .background(
-                                                    RoundedRectangle(cornerRadius: 8)
-                                                        .fill(Color.gray.opacity(0.2))
-                                                )
-                                        }
-                                        .buttonStyle(PlainButtonStyle())
-                                    }
-                                }
-                                .padding(.vertical, 8)
-                            }
-                        }
-                    }
-                }
-            }
+            BookAndChapterPickerView(
+                expandedBook: $expandedBook,
+                isPresented: $showingBookPicker,
+                bookCodes: viewModel.bookCodes,
+                versionId: viewModel.versionId,
+                bookNameProvider: { bookCode in viewModel.bookName(for: bookCode) },
+                chapterLabelsProvider: { bookCode in viewModel.chapterLabels(for: bookCode) },
+                onSelectionChange: onSelectionChange
+            )
         }
     }
 
@@ -250,18 +139,6 @@ public struct BibleReaderHeaderView: View {
     func handleVersionTap() {
         viewModel.loadVersionsList()
         showingVersionPicker = true
-    }
-
-    // Helper function to split abbreviation into letters and trailing numbers
-    private func splitAbbreviation(_ text: String) -> (letters: String, numbers: String) {
-        let pattern = #"^(.*?)(\d+)$"#
-        if let regex = try? NSRegularExpression(pattern: pattern),
-           let match = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)) {
-            let lettersRange = Range(match.range(at: 1), in: text)!
-            let numbersRange = Range(match.range(at: 2), in: text)!
-            return (String(text[lettersRange]), String(text[numbersRange]))
-        }
-        return (text, "")
     }
 
 }

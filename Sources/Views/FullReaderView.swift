@@ -68,43 +68,42 @@ public struct FullReaderView: View {
                 Spacer(minLength: 0)
             }
             // Floating chapter navigation buttons (chrome)
-            if viewModel.showChrome {
-                HStack {
-                    Button(action: {
-                        viewModel.goToPreviousChapter()
-                    }) {
-                        ZStack {
-                            Circle()
-                                .fill(Color.white)
-                                .shadow(radius: 2)
-                                .frame(width: 42, height: 42)
-                            Image(systemName: "chevron.left")
-                                .foregroundColor(.black)
-                                .font(.system(size: 16, weight: .medium))
-                        }
-                    }
-                    Spacer()
-                    Button(action: {
-                        viewModel.goToNextChapter()
-                    }) {
-                        ZStack {
-                            Circle()
-                                .fill(Color.white)
-                                .shadow(radius: 2)
-                                .frame(width: 42, height: 42)
-                            Image(systemName: "chevron.right")
-                                .foregroundColor(.black)
-                                .font(.system(size: 16, weight: .medium))
-                        }
+            HStack {
+                Button(action: {
+                    viewModel.goToPreviousChapter()
+                }) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.white)
+                            .shadow(radius: 2)
+                            .frame(width: 42, height: 42)
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.black)
+                            .font(.system(size: 16, weight: .medium))
                     }
                 }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 24)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                .allowsHitTesting(viewModel.isVersionLoaded)
-                .opacity(viewModel.isVersionLoaded ? 1 : 0.5)
-                .animation(.easeInOut(duration: 0.1), value: viewModel.showChrome)
+                Spacer()
+                Button(action: {
+                    viewModel.goToNextChapter()
+                }) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.white)
+                            .shadow(radius: 2)
+                            .frame(width: 42, height: 42)
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.black)
+                            .font(.system(size: 16, weight: .medium))
+                    }
+                }
             }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 24)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+            .allowsHitTesting(viewModel.isVersionLoaded && viewModel.showChrome)
+            .opacity(viewModel.isVersionLoaded ? 1 : 0.5)
+            .offset(y: viewModel.showChrome ? 0 : 100)
+            .animation(.easeInOut(duration: 0.3), value: viewModel.showChrome)
         }
         .task {
             Task { @MainActor in

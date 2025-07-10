@@ -8,11 +8,13 @@ public struct BibleReaderHeaderView: View {
     @StateObject private var viewModel: BibleReaderHeaderViewModel
     let showChrome: Bool
     let onSelectionChange: ((Int, String, Int) -> Void)?
+    let onCompactTap: (() -> Void)?
 
-    public init(version: BibleVersion, book: String, chapter: Int, showChrome: Bool = true, onSelectionChange: ((Int, String, Int) -> Void)? = nil) {
+    public init(version: BibleVersion, book: String, chapter: Int, showChrome: Bool = true, onSelectionChange: ((Int, String, Int) -> Void)? = nil, onCompactTap: (() -> Void)? = nil) {
         _viewModel = StateObject(wrappedValue: BibleReaderHeaderViewModel(version: version, book: book, chapter: chapter))
         self.showChrome = showChrome
         self.onSelectionChange = onSelectionChange
+        self.onCompactTap = onCompactTap
     }
 
     public var body: some View {
@@ -166,6 +168,12 @@ public struct BibleReaderHeaderView: View {
                 .foregroundColor(.black)
         }
         .frame(height: 24)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            withAnimation(.easeInOut(duration: 0.3)) {
+                onCompactTap?()
+            }
+        }
     }
 
     // Custom shape for half-pill sides
@@ -290,13 +298,15 @@ class BibleReaderHeaderViewModel: ObservableObject {
     
     VStack {
         Divider()
-        BibleReaderHeaderView(version: sampleVersion, book: "JHN", chapter: 3, showChrome: true) { versionId, book, chapter in
+        BibleReaderHeaderView(version: sampleVersion, book: "JHN", chapter: 3, showChrome: true, onSelectionChange: { versionId, book, chapter in
             print("Version: \(versionId), Book: \(book), Chapter: \(chapter)")
-        }
+        })
         Divider()
-        BibleReaderHeaderView(version: sampleVersion, book: "JHN", chapter: 3, showChrome: false) { versionId, book, chapter in
+        BibleReaderHeaderView(version: sampleVersion, book: "JHN", chapter: 3, showChrome: false, onSelectionChange: { versionId, book, chapter in
             print("Version: \(versionId), Book: \(book), Chapter: \(chapter)")
-        }
+        }, onCompactTap: {
+            print("Compact header tapped!")
+        })
         Divider()
     }
 }

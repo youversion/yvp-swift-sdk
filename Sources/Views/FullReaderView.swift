@@ -127,6 +127,9 @@ public struct FullReaderView: View {
                     Task {
                         await viewModel.onHeaderSelectionChange(v: v, b: b, c: c)
                     }
+                },
+                                     onCompactTap: {
+                    viewModel.showChrome = true
                 })
                 .padding(.leading)
             }
